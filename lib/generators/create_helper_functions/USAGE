@@ -1,0 +1,9 @@
+Description:
+    Explain the generator
+
+Example:
+    rails generate create_helper_functions --schema_name audit
+
+    This will create:
+      db/migrate/*_create_database_helper_functions.rb
+      db/postgres-audit-trigger.psql

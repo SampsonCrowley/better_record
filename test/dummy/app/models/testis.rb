@@ -1,0 +1,2 @@
+class Testis < ApplicationRecord
+end
