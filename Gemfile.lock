@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    better_record (0.4.0)
+    better_record (0.5.4)
       pg (~> 1.0, >= 1.0.0)
       pry-rails (~> 0.3, >= 0.3.6)
       rails (~> 5.2, >= 5.2.0)
