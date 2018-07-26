@@ -10,7 +10,7 @@ module BetterRecord
             expect(record.valid?).to be false
             expect(record.errors[column_name]).to include("can't be blank")
             unless in_app_only
-              expect { record.save(validate: false) }.to_not raise_error(ActiveRecord::NotNullViolation)
+              expect { record.save(validate: false) }.to raise_error(ActiveRecord::NotNullViolation)
             end
           end
 
