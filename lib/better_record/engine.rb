@@ -9,13 +9,5 @@ module BetterRecord
       g.assets false
       g.helper false
     end
-
-    rake_tasks do
-      puts 'BetterRecord::Engine RAKE TASKS'
-      Dir[File.expand_path('/tasks/**/*.rake', __dir__)].each do |f|
-        puts f
-        load f
-      end
-    end
   end
 end
