@@ -1,0 +1,28 @@
+<div id="better_record-table_sizes">
+  <%= link_to 'Back', table_sizes_path %>
+
+  <h1>
+    <%= @table_size.class.polymorphic_name %> Stats For <%= @table_size.name %>
+  </h1>
+
+  <table style='width: 100%; border-collapse: collapse'>
+    <thead>
+      <tr style='text-align: center; border-bottom: 1px solid #222'>
+        <%- @table_size.default_print.each do |col| -%>
+          <td style='border-right: 1px solid #222'>
+            <%= col %>
+          </td>
+        <%- end -%>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style='text-align: center'>
+        <%- @table_size.default_print.each do |col| -%>
+          <td style='border-right: 1px solid #222'>
+            <%= @table_size.__send__ col %>
+          </td>
+        <%- end -%>
+      </tr>
+    </tbody>
+  </table>
+</div>

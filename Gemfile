@@ -13,3 +13,5 @@ gemspec
 
 # To use a debugger
 # gem 'byebug', group: [:development, :test]
+gem 'pry-rails', '>=0.3.6'
+gem 'table_print', '>=1.5.6'

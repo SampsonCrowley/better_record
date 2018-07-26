@@ -1,0 +1,15 @@
+Description:
+    Explain the generator
+
+Example:
+    rails generate better_record:install
+
+    This will create:
+      .gitattributes
+      .gitignore
+      .irbrc
+      .jsbeautifyrc
+      .pryrc
+      .ruby_version
+      db/migrate/TIMESTAMP_create_better_record_db_functions
+

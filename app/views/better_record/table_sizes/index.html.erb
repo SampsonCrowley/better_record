@@ -1,0 +1,34 @@
+<div id="better_record-table_sizes">
+  <h1>
+    <%= BetterRecord::TableSize.polymorphic_name %> Summary
+  </h1>
+
+  <table style='border-collapse: collapse'>
+    <thead>
+      <tr style='border-bottom: 1px solid #222'>
+        <td style='padding: .5em; border-right: 1px solid #222'>
+          Name
+        </td>
+        <td>
+          Total Size
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <% BetterRecord::TableSize.all.each do |table_size| %>
+        <%- if table_size.oid == @table_sizes.last.oid -%>
+        <tr>
+        <%- else -%>
+        <tr style="border-bottom: 1px solid #222">
+        <%- end -%>
+          <td style='padding: .5em; border-right: 1px solid #222'>
+            <%= link_to table_size.name, table_size %>
+          </td>
+          <td style='padding: .5em'>
+            <%= table_size.total %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

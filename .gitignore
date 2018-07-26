@@ -11,10 +11,14 @@
 /db/*.sqlite3-journal
 
 # Ignore all logfiles and tempfiles.
-/log/*
 /tmp/*
-!/log/.keep
+/**/tmp/*
 !/tmp/.keep
+!/**/tmp/.keep
+/log/*
+/**/log/*
+!/log/.keep
+!/**/log/.keep
 
 # Ignore uploaded files in development and files that will be compiled in production
 /public/*

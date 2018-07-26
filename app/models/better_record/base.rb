@@ -9,14 +9,6 @@ module BetterRecord
     # == Extensions ===========================================================
 
     # == Relationships ========================================================
-    if (ha = BetterRecord.has_audits_by_default)
-      has_many :audits,
-        class_name: 'BetterRecord::Audit',
-        primary_type: :table_name,
-        foreign_key: :row_id,
-        foreign_type: :table_name,
-        as: :audits
-    end
 
     # == Validations ==========================================================
     before_validation :set_booleans
@@ -26,6 +18,10 @@ module BetterRecord
     # == Callbacks ============================================================
 
     # == Class Methods ========================================================
+    def self.audit_relation_name
+      @@audit_relation_name ||= (BetterRecord.audit_relation_name.presence || :audits).to_sym
+    end
+
     def self.boolean_columns
       []
     end
@@ -133,6 +129,10 @@ module BetterRecord
       self.class.boolean_columns
     end
 
+    def default_print
+      self.class.default_print
+    end
+
     private
       # def table_name_has_schema?
       #   self.class.table_name_has_schema?
@@ -153,5 +153,13 @@ module BetterRecord
         true
       end
 
+    if (ha = BetterRecord.has_audits_by_default)
+      has_many self.audit_relation_name,
+        class_name: 'BetterRecord::LoggedAction',
+        primary_type: :table_name,
+        foreign_key: :row_id,
+        foreign_type: :table_name,
+        as: self.audit_relation_name
+    end
   end
 end

@@ -1,5 +1,10 @@
-#!/usr/bin/env ruby
-$: << File.expand_path("../test", __dir__)
+#!/usr/bin/env bash
+RAILS_ENV=test rails db:migrate
 
-require "bundler/setup"
-require "rails/plugin/test"
+if [[ -z "$1" ]] ; then
+  bundle exec rspec
+else
+  for filename in $(find spec/* -wholename */$1_spec.rb); do
+    bundle exec rspec "$filename"
+  done
+fi
