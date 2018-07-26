@@ -17,7 +17,7 @@ module BetterRecord
   self.app_domain_name = (ENV.fetch('APP_DOMAIN_NAME') { 'non_existant_domain.com' }).to_s
 end
 
-Dir.glob("#{File.expand_path(__dir__)}/better_record/*").each do |d|
+Dir.glob("#{File.expand_path(__dir__)}/better_record/*.rb").each do |d|
   require d unless (d =~ /fake/)
 end
 
@@ -32,3 +32,9 @@ ActiveSupport.on_load(:active_record) do
   end
   include BetterRecord::NullifyBlankAttributes
 end
+# !centered[## [Men's Results](/assets/pdfs/2018-golf-international-results-male.pdf)--br--[![Mens Results](/assets/images/2018-golf-international-results-male.jpg)](/assets/pdfs/2018-golf-international-results-male.pdf)]
+# !centered[## [Women's Results](/assets/pdfs/2018-golf-international-results-female.pdf)--br--[![Womens Results](/assets/images/2018-golf-international-results-female.jpg)](/assets/pdfs/2018-golf-international-results-female.pdf)]
+# !centered[## [Team Results](/assets/pdfs/2018-golf-international-results-team.pdf)--br--[![Team Results](/assets/images/2018-golf-international-results-team)](/assets/pdfs/2018-golf-international-results-team.pdf)]
+#
+# !centered[## [Team Results](/assets/pdfs/2018-golf-international-results-summary.pdf)--br--[![Team Results](/assets/images/2018-golf-international-results-summary.jpg)](/assets/pdfs/2018-golf-international-results-summary.pdf)]
+# !centered[## [Individual Results](/assets/pdfs/2018-golf-international-results.pdf)--br--[![Team Results](/assets/images/2018-golf-international-results.jpg)](/assets/pdfs/2018-golf-international-results.pdf)]

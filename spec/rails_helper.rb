@@ -1,8 +1,10 @@
-require 'method_helper'
+Dir[File.expand_path('../lib/better_record/rspec/*.rb', __dir__)].each do |file|
+  require file
+end
 
 ENV['RAILS_ENV'] ||= 'test'
 
-require File.expand_path("../dummy/config/environment.rb", __FILE__)
+require File.expand_path('dummy/config/environment.rb', __dir__)
 require 'rspec/rails'
 require 'factory_bot_rails'
 
@@ -13,7 +15,7 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
-  config.extend MethodHelper::Functions
+  config.extend BetterRecord::Rspec::Extensions
 
   config.exclude_pattern = '**/dummy/**/*spec*'
   config.expect_with :rspec do |expectations|

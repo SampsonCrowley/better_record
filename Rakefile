@@ -10,7 +10,7 @@ load 'rails/tasks/engine.rake'
 
 Bundler::GemHelper.install_tasks
 
-Dir[File.join(File.dirname(__FILE__), 'lib/tasks/**/*.rake')].each {|f| load f }
+Dir[File.join(File.dirname(__FILE__), 'lib/better_record/tasks/**/*.rake')].each {|f| load f }
 
 require 'rspec/core'
 require 'rspec/core/rake_task'

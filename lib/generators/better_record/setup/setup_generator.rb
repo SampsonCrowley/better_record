@@ -6,52 +6,51 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
   argument :name, type: :string, default: 'testes'
   class_option :eject, type: :boolean, default: false
 
-  def copy_migrations
-    rake("better_record:install:migrations")
-  end
-
-  def copy_templates
-    template 'gitattributes', '.gitattributes'
-    template 'gitignore', '.gitignore'
-    template 'irbrc', '.irbrc'
-    template 'jsbeautifyrc', '.jsbeautifyrc'
-    template 'pryrc', '.pryrc'
-    template 'rspec', '.rspec'
-    template 'ruby-version', '.ruby-version'
-    template 'initializer.rb', 'config/initializers/better_record.rb'
-    directory "#{BetterRecord::Engine.root}/lib/templates", 'lib/templates'
-    template "#{BetterRecord::Engine.root}/spec/method_helper.rb", 'spec/method_helper.rb'
-    directory "#{BetterRecord::Engine.root}/spec/method_helper", 'spec/method_helper'
-    directory "tasks", 'lib/tasks'
-
-    eject_files if !!options['eject']
-  end
-
-  def gsub_files
-    eager_line = 'config.eager_load_paths += Dir["#{config.root}/lib/modules/**/"]'
-    structure_line = 'config.active_record.schema_format'
-
-    gsub_file 'config/application.rb', /([ \t]*?(#{Regexp.escape(eager_line)}|#{Regexp.escape(structure_line)})[ ='":]*?(rb|sql)?['"]?[ \t0-9\.]*?)\n/mi do |match|
-      ""
-    end
-
-    gsub_file 'config/application.rb', /#{Regexp.escape("config.load_defaults")}[ 0-9\.]+\n/mi do |match|
-      "#{match}    #{eager_line}\n    #{structure_line} = :sql"
-    end
-
-    gsub_file 'app/models/application_record.rb', /(#{Regexp.escape("class ApplicationRecord < ActiveRecord::Base")})/mi do |match|
-      p match
-      "class ApplicationRecord < BetterRecord::Base"
-    end
-  end
-
-  def copy_migrations
-    rake("better_record:install:migrations")
+  def run_generator
+    copy_templates
+    copy_migrations
+    gsub_files
   end
 
   private
     def audit_schema
       @audit_schema ||= options['audit_schema'].presence || 'auditing'
+    end
+
+    def copy_migrations
+      rake("better_record:install:migrations")
+    end
+
+    def copy_templates
+      template 'gitattributes', '.gitattributes'
+      template 'gitignore', '.gitignore'
+      template 'irbrc', '.irbrc'
+      template 'jsbeautifyrc', '.jsbeautifyrc'
+      template 'pryrc', '.pryrc'
+      template 'rspec', '.rspec'
+      template 'ruby-version', '.ruby-version'
+      template 'initializer.rb', 'config/initializers/better_record.rb'
+      directory "#{BetterRecord::Engine.root}/lib/templates", 'lib/templates'
+
+      eject_files if !!options['eject']
+    end
+
+    def gsub_files
+      eager_line = 'config.eager_load_paths += Dir["#{config.root}/lib/modules/**/"]'
+      structure_line = 'config.active_record.schema_format'
+
+      gsub_file 'config/application.rb', /([ \t]*?(#{Regexp.escape(eager_line)}|#{Regexp.escape(structure_line)})[ ='":]*?(rb|sql)?['"]?[ \t0-9\.]*?)\n/mi do |match|
+        ""
+      end
+
+      gsub_file 'config/application.rb', /#{Regexp.escape("config.load_defaults")}[ 0-9\.]+\n/mi do |match|
+        "#{match}    #{eager_line}\n    #{structure_line} = :sql\n"
+      end
+
+      gsub_file 'app/models/application_record.rb', /(#{Regexp.escape("class ApplicationRecord < ActiveRecord::Base")})/mi do |match|
+        p match
+        "class ApplicationRecord < BetterRecord::Base"
+      end
     end
 
     def eject_files

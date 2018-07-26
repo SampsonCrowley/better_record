@@ -13,7 +13,7 @@ module BetterRecord
   # uncomment the following line to use table_names instead of model names
   # as the 'type' value in polymorphic relationships
 
-  # self.default_polymorphic_method = :polymorphic_name
+  # self.default_polymorphic_method = :table_name
 
   # uncomment the following line to use change the database schema
   # for auditing functions and logged_actions. DEFAULT - 'auditing'

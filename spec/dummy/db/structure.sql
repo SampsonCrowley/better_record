@@ -702,10 +702,91 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: test_audits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.test_audits (
+    id bigint NOT NULL,
+    test_text text,
+    test_date date,
+    test_time timestamp without time zone,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: test_audits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.test_audits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: test_audits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.test_audits_id_seq OWNED BY public.test_audits.id;
+
+
+--
+-- Name: test_custom_audits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.test_custom_audits (
+    id bigint NOT NULL,
+    test_text text,
+    test_date date,
+    test_time timestamp without time zone,
+    test_skipped_column text,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: test_custom_audits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.test_custom_audits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: test_custom_audits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.test_custom_audits_id_seq OWNED BY public.test_custom_audits.id;
+
+
+--
 -- Name: logged_actions event_id; Type: DEFAULT; Schema: auditing; Owner: -
 --
 
 ALTER TABLE ONLY auditing.logged_actions ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq'::regclass);
+
+
+--
+-- Name: test_audits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_audits ALTER COLUMN id SET DEFAULT nextval('public.test_audits_id_seq'::regclass);
+
+
+--
+-- Name: test_custom_audits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_custom_audits ALTER COLUMN id SET DEFAULT nextval('public.test_custom_audits_id_seq'::regclass);
 
 
 --
@@ -738,6 +819,22 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: test_audits test_audits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_audits
+    ADD CONSTRAINT test_audits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: test_custom_audits test_custom_audits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_custom_audits
+    ADD CONSTRAINT test_custom_audits_pkey PRIMARY KEY (id);
 
 
 --
@@ -776,6 +873,8 @@ SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
 ('20180725160802'),
-('20180725201614');
+('20180725201614'),
+('20180725233004'),
+('20180725233007');
 
 

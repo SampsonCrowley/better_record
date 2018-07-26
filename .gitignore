@@ -9,6 +9,8 @@
 # Ignore the default SQLite database.
 /db/*.sqlite3
 /db/*.sqlite3-journal
+/**/db/*.sqlite3
+/**/db/*.sqlite3-journal
 
 # Ignore all logfiles and tempfiles.
 /tmp/*
@@ -19,10 +21,13 @@
 /**/log/*
 !/log/.keep
 !/**/log/.keep
+/**/yarn-error.log
 
 # Ignore uploaded files in development and files that will be compiled in production
 /public/*
+/**/dummy/public/*
 /storage/*
+/**/dummy/storage/*
 !/public/.keep
 !/storage/.keep
 
@@ -49,10 +54,3 @@
 
 .bundle/
 pkg/
-test/dummy/db/*.sqlite3
-test/dummy/db/*.sqlite3-journal
-test/dummy/log/*.log
-test/dummy/node_modules/
-test/dummy/yarn-error.log
-test/dummy/storage/
-test/dummy/tmp/

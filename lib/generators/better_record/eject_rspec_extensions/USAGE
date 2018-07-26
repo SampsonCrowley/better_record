@@ -1,0 +1,12 @@
+Description:
+    Eject BetterRecord::Rspec::Extensions into local spec dir
+
+Example:
+    rails generate better_record:eject_rspec_extensions
+
+    This will create:
+        spec/extensions.rb
+        spec/extensions/boolean_column.rb
+        spec/extensions/has_valid_factory.rb
+        spec/extensions/optional_column.rb
+        spec/extensions/required_column.rb
