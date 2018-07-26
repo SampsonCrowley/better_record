@@ -19,8 +19,8 @@ Gem::Specification.new do |s|
   BODY
   s.license     = "MIT"
 
-  s.files = Dir["{app,config,db,lib}/*", "{app,config,db,lib}/*/*", "{app,config,db,lib}/*/*/*", "MIT-LICENSE", "Rakefile", "README.md"]
-  s.test_files = Dir["spec/**/*"]
+  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
+  # s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails", "~> 5.2", '>= 5.2.0'
   s.add_dependency "pg", "~> 1.0", '>= 1.0.0'
