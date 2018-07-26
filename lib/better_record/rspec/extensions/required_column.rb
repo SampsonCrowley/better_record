@@ -1,7 +1,7 @@
 module BetterRecord
   module Rspec
     module Extensions
-      def required_column(factory_name, column_name, unique = false, &blk)
+      def required_column(factory_name, column_name, unique = false, in_app_only = false, &blk)
         describe column_name.to_s do
           let(:record) { build(factory_name) }
 
@@ -9,7 +9,9 @@ module BetterRecord
             record.__send__"#{column_name}=", nil
             expect(record.valid?).to be false
             expect(record.errors[column_name]).to include("can't be blank")
-            expect { record.save(validate: false) }.to raise_error(ActiveRecord::NotNullViolation)
+            unless in_app_only
+              expect { record.save(validate: false) }.to_not raise_error(ActiveRecord::NotNullViolation)
+            end
           end
 
           if unique

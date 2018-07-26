@@ -7,6 +7,7 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
   class_option :eject, type: :boolean, default: false
 
   def run_generator
+    route 'mount BetterRecord::Engine => "/better_record"'
     copy_templates
     copy_migrations
     gsub_files
