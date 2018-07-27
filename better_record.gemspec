@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'pry-rails', '~> 0.3', '>=0.3.6'
   s.add_dependency 'table_print', '~> 1.5', '>= 1.5.6'
 
-  s.add_development_dependency 'rspec-rails'
+  s.add_development_dependency 'rspec-rails', '~> 3.7', '>= 3.7.2'
   # s.add_development_dependency 'capybara'
-  s.add_development_dependency 'factory_bot_rails'
+  s.add_development_dependency 'factory_bot_rails', '~> 4.10', '>= 4.10.0'
 end

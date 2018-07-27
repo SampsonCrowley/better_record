@@ -2,7 +2,7 @@
 require 'rails_helper'
 
 RSpec.describe <%= class_name %>, <%= type_metatag(:model) %> do
-  has_valid_factory(:<%= class_name.underscore %>)
+  has_valid_factory(:<%= class_name.constantize.table_name.singularize %>)
 
   describe 'Attributes' do
     # run `rails spec:attributes <%= class_name -%>` to replace this line
