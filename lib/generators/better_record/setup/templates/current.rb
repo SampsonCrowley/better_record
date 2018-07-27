@@ -14,6 +14,7 @@ module Current
   # == Callbacks ============================================================
 
   # == Class Methods ========================================================
+
   def self.user
     BetterRecord::Current.user
   end
@@ -30,14 +31,16 @@ module Current
     set_user(user)
   end
 
+  def self.user_type
+    BetterRecord::Current.user_type
+  end
+
   def self.set(user, ip)
-    BetterRecord::Current.user = user.presence || nil
-    BetterRecord::Current.ip_address = ip.presence || nil
+    BetterRecord::Current.set(user, ip)
   end
 
   def self.drop_values
-    BetterRecord::Current.user = nil
-    BetterRecord::Current.ip_address = nil
+    BetterRecord::Current.drop_values
   end
 
   # == Instance Methods =====================================================

@@ -10,26 +10,6 @@ module BetterRecord
     end
 
     class_methods do
-      def table_name_defined?
-        @table_name_defined ||= method_defined?(:table_name) || !!table_name.present?
-      end
-
-      def table_name_has_schema?
-        @table_name_has_schema ||= (table_name =~ /\w+\.\w+/)
-      end
-
-      def table_name_without_schema
-        @table_name_without_schema ||= (table_name =~ /\w+\.\w+/) ? table_name.split('.').last : table_name
-      end
-
-      def table_name_with_schema
-        @table_name_without_schema ||= "#{table_schema}.#{table_name_without_schema}"
-      end
-
-      def table_schema
-        @table_schema ||= table_name_has_schema? ? table_name.split('.').first : 'public'
-      end
-
       def audit_relation_name
         @@audit_relation_name ||= (BetterRecord.audit_relation_name.presence || :audits).to_sym
       end
@@ -54,6 +34,10 @@ module BetterRecord
         str
       end
 
+      def current_user_type
+        BetterRecord::Current.user_type
+      end
+
       def default_print
         column_names
       end
@@ -76,14 +60,34 @@ module BetterRecord
         @@queue_adapter == :inline
       end
 
+      def table_name_defined?
+        @table_name_defined ||= method_defined?(:table_name) || !!table_name.present?
+      end
+
+      def table_name_has_schema?
+        @table_name_has_schema ||= (table_name =~ /\w+\.\w+/)
+      end
+
+      def table_name_without_schema
+        @table_name_without_schema ||= (table_name =~ /\w+\.\w+/) ? table_name.split('.').last : table_name
+      end
+
+      def table_name_with_schema
+        @table_name_without_schema ||= "#{table_schema}.#{table_name_without_schema}"
+      end
+
+      def table_schema
+        @table_schema ||= table_name_has_schema? ? table_name.split('.').first : 'public'
+      end
+
       def table_size
         BetterRecord::TableSize.unscoped.find_by(name: table_name_without_schema, schema: table_schema)
       end
 
       def transaction(*args)
         super(*args) do
-          if Current.user
-            ip = Current.ip_address ? "'#{Current.ip_address}'" : 'NULL'
+          if BetterRecord::Current.user
+            ip = BetterRecord::Current.ip_address ? "'#{BetterRecord::Current.ip_address}'" : 'NULL'
 
             ActiveRecord::Base.connection.execute <<-SQL
               CREATE TEMP TABLE IF NOT EXISTS
@@ -92,15 +96,15 @@ module BetterRecord
               UPDATE
                 _app_user
               SET
-                user_id=#{Current.user.id},
-                user_type='#{Current.user.class.to_s}',
+                user_id=#{BetterRecord::Current.user.id},
+                user_type='#{current_user_type}',
                 ip_address=#{ip};
 
               INSERT INTO
                 _app_user (user_id, user_type, ip_address)
               SELECT
-                #{Current.user.id},
-                '#{Current.user.class.to_s}',
+                #{BetterRecord::Current.user.id},
+                '#{current_user_type}',
                 #{ip}
               WHERE NOT EXISTS (SELECT * FROM _app_user);
             SQL
