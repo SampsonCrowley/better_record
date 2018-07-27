@@ -7,7 +7,11 @@ module ActiveRecord
         klass_scope       = klass_join_scope(table, predicate_builder)
 
         if type
-          klass_scope.where!(type => foreign_klass.__send__(options[:primary_type] || :table_name))
+          if options[:strict_primary_type]
+            klass_scope.where!(type => BetterRecord::PolymorphicOverride.polymorphic_value(foreign_klass, options))
+          else
+            klass_scope.where!(type => BetterRecord::PolymorphicOverride.all_types(foreign_klass))
+          end
         end
 
         scope_chain_items.inject(klass_scope, &:merge!)

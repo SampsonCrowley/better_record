@@ -1,2 +1,0 @@
-class TestCustomAudit < ApplicationRecord
-end

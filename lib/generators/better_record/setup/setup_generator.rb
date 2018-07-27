@@ -31,6 +31,7 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
       template 'rspec', '.rspec'
       template 'ruby-version', '.ruby-version'
       template 'initializer.rb', 'config/initializers/better_record.rb'
+      template 'current.rb', 'app/models/current.rb'
       directory "#{BetterRecord::Engine.root}/lib/templates", 'lib/templates'
 
       eject_files if !!options['eject']
@@ -49,7 +50,6 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
       end
 
       gsub_file 'app/models/application_record.rb', /(#{Regexp.escape("class ApplicationRecord < ActiveRecord::Base")})/mi do |match|
-        p match
         "class ApplicationRecord < BetterRecord::Base"
       end
     end

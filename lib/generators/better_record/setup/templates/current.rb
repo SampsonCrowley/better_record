@@ -1,6 +1,4 @@
-class ApplicationRecord < BetterRecord::Base
-  self.abstract_class = true
-
+module Current
   # == Constants ============================================================
 
   # == Attributes ===========================================================
@@ -16,7 +14,24 @@ class ApplicationRecord < BetterRecord::Base
   # == Callbacks ============================================================
 
   # == Class Methods ========================================================
+  def self.user=(user)
+    set_user(user)
+  end
 
+  def self.ip_address=(user)
+    set_user(user)
+  end
+
+  def self.set(user, ip)
+    BetterRecord::Current.user = user.presence || nil
+    BetterRecord::Current.ip_address = ip.presence || nil
+  end
+
+  def self.drop_values
+    BetterRecord::Current.user = nil
+    BetterRecord::Current.ip_address = nil
+  end
+  
   # == Instance Methods =====================================================
 
 end

@@ -1,12 +1,14 @@
 require 'rails_helper'
 
-RSpec.describe TestAudit, type: :model do
-  has_valid_factory(:test_audit)
+RSpec.describe Client, type: :model do
+  has_valid_factory(:client)
 
   describe 'Attributes' do
-    #  test_text: :text
-    #  test_date: :date
-    #  test_time: :datetime
+    # first_name: :text, required
+    #  last_name: :text, required
+    #      email: :text
+    #      phone: :text
+    # phone_type: :text
     # created_at: :datetime, required
     # updated_at: :datetime, required
 

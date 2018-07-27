@@ -378,6 +378,38 @@ COMMENT ON FUNCTION auditing.if_modified_func() IS '
 
 
 --
+-- Name: developer_changed(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.developer_changed() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                            IF (NEW.password IS NOT NULL)
+              AND (
+                (TG_OP = 'INSERT') OR ( NEW.password IS DISTINCT FROM OLD.password )
+              ) THEN
+                NEW.password = hash_password(NEW.password);
+              ELSE
+                IF (TG_OP IS DISTINCT FROM 'INSERT') THEN
+                  NEW.password = OLD.password;
+                ELSE
+                  NEW.password = NULL;
+                END IF;
+              END IF;
+
+
+                            IF (TG_OP = 'INSERT') OR ( NEW.email IS DISTINCT FROM OLD.email ) THEN
+                NEW.email = validate_email(NEW.email);
+              END IF;
+
+
+              RETURN NEW;
+            END;
+            $$;
+
+
+--
 -- Name: hash_password(text); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -681,6 +713,185 @@ CREATE TABLE auditing.table_sizes (
 
 
 --
+-- Name: active_admin_comments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.active_admin_comments (
+    id bigint NOT NULL,
+    namespace character varying,
+    body text,
+    resource_type character varying,
+    resource_id bigint,
+    author_type character varying,
+    author_id bigint,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: active_admin_comments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.active_admin_comments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: active_admin_comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.active_admin_comments_id_seq OWNED BY public.active_admin_comments.id;
+
+
+--
+-- Name: active_storage_attachments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.active_storage_attachments (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    record_type character varying NOT NULL,
+    record_id bigint NOT NULL,
+    blob_id bigint NOT NULL,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: active_storage_attachments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.active_storage_attachments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: active_storage_attachments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.active_storage_attachments_id_seq OWNED BY public.active_storage_attachments.id;
+
+
+--
+-- Name: active_storage_blobs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.active_storage_blobs (
+    id bigint NOT NULL,
+    key character varying NOT NULL,
+    filename character varying NOT NULL,
+    content_type character varying,
+    metadata text,
+    byte_size bigint NOT NULL,
+    checksum character varying NOT NULL,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: active_storage_blobs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.active_storage_blobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: active_storage_blobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.active_storage_blobs_id_seq OWNED BY public.active_storage_blobs.id;
+
+
+--
+-- Name: admin_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.admin_users (
+    id bigint NOT NULL,
+    email character varying DEFAULT ''::character varying NOT NULL,
+    encrypted_password character varying DEFAULT ''::character varying NOT NULL,
+    reset_password_token character varying,
+    reset_password_sent_at timestamp without time zone,
+    remember_created_at timestamp without time zone,
+    sign_in_count integer DEFAULT 0 NOT NULL,
+    current_sign_in_at timestamp without time zone,
+    last_sign_in_at timestamp without time zone,
+    current_sign_in_ip inet,
+    last_sign_in_ip inet,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: admin_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.admin_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: admin_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.admin_users_id_seq OWNED BY public.admin_users.id;
+
+
+--
+-- Name: appointments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.appointments (
+    id bigint NOT NULL,
+    client_id bigint,
+    title text,
+    description text,
+    starting timestamp without time zone,
+    ending timestamp without time zone,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: appointments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.appointments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: appointments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.appointments_id_seq OWNED BY public.appointments.id;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -693,12 +904,119 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
+-- Name: clients; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.clients (
+    id bigint NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    email text,
+    phone text,
+    phone_type text,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT client_email_or_phone_exists CHECK (((email IS NOT NULL) OR (phone IS NOT NULL)))
+);
+
+
+--
+-- Name: clients_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.clients_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: clients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.clients_id_seq OWNED BY public.clients.id;
+
+
+--
+-- Name: developers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.developers (
+    id bigint NOT NULL,
+    email character varying NOT NULL,
+    password text NOT NULL,
+    first character varying NOT NULL,
+    middle character varying,
+    last character varying NOT NULL,
+    suffix character varying,
+    dob date NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: developers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.developers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: developers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.developers_id_seq OWNED BY public.developers.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
+
+
+--
+-- Name: tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tasks (
+    id bigint NOT NULL,
+    title character varying NOT NULL,
+    description character varying,
+    due_date date,
+    developer_id bigint,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: tasks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tasks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.id;
 
 
 --
@@ -776,6 +1094,62 @@ ALTER TABLE ONLY auditing.logged_actions ALTER COLUMN event_id SET DEFAULT nextv
 
 
 --
+-- Name: active_admin_comments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.active_admin_comments ALTER COLUMN id SET DEFAULT nextval('public.active_admin_comments_id_seq'::regclass);
+
+
+--
+-- Name: active_storage_attachments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.active_storage_attachments ALTER COLUMN id SET DEFAULT nextval('public.active_storage_attachments_id_seq'::regclass);
+
+
+--
+-- Name: active_storage_blobs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.active_storage_blobs ALTER COLUMN id SET DEFAULT nextval('public.active_storage_blobs_id_seq'::regclass);
+
+
+--
+-- Name: admin_users id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_users ALTER COLUMN id SET DEFAULT nextval('public.admin_users_id_seq'::regclass);
+
+
+--
+-- Name: appointments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.appointments ALTER COLUMN id SET DEFAULT nextval('public.appointments_id_seq'::regclass);
+
+
+--
+-- Name: clients id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.clients ALTER COLUMN id SET DEFAULT nextval('public.clients_id_seq'::regclass);
+
+
+--
+-- Name: developers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.developers ALTER COLUMN id SET DEFAULT nextval('public.developers_id_seq'::regclass);
+
+
+--
+-- Name: tasks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks ALTER COLUMN id SET DEFAULT nextval('public.tasks_id_seq'::regclass);
+
+
+--
 -- Name: test_audits id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -806,6 +1180,46 @@ ALTER TABLE ONLY auditing.table_sizes
 
 
 --
+-- Name: active_admin_comments active_admin_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.active_admin_comments
+    ADD CONSTRAINT active_admin_comments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: active_storage_attachments active_storage_attachments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.active_storage_attachments
+    ADD CONSTRAINT active_storage_attachments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: active_storage_blobs active_storage_blobs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.active_storage_blobs
+    ADD CONSTRAINT active_storage_blobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: admin_users admin_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_users
+    ADD CONSTRAINT admin_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: appointments appointments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.appointments
+    ADD CONSTRAINT appointments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -814,11 +1228,35 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
+-- Name: clients clients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.clients
+    ADD CONSTRAINT clients_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: developers developers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.developers
+    ADD CONSTRAINT developers_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: tasks tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT tasks_pkey PRIMARY KEY (id);
 
 
 --
@@ -866,12 +1304,309 @@ CREATE INDEX logged_actions_row_id_idx ON auditing.logged_actions USING btree (r
 
 
 --
+-- Name: index_active_admin_comments_on_author_type_and_author_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_active_admin_comments_on_author_type_and_author_id ON public.active_admin_comments USING btree (author_type, author_id);
+
+
+--
+-- Name: index_active_admin_comments_on_namespace; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_active_admin_comments_on_namespace ON public.active_admin_comments USING btree (namespace);
+
+
+--
+-- Name: index_active_admin_comments_on_resource_type_and_resource_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_active_admin_comments_on_resource_type_and_resource_id ON public.active_admin_comments USING btree (resource_type, resource_id);
+
+
+--
+-- Name: index_active_storage_attachments_on_blob_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_active_storage_attachments_on_blob_id ON public.active_storage_attachments USING btree (blob_id);
+
+
+--
+-- Name: index_active_storage_attachments_uniqueness; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_active_storage_attachments_uniqueness ON public.active_storage_attachments USING btree (record_type, record_id, name, blob_id);
+
+
+--
+-- Name: index_active_storage_blobs_on_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_active_storage_blobs_on_key ON public.active_storage_blobs USING btree (key);
+
+
+--
+-- Name: index_admin_users_on_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_admin_users_on_email ON public.admin_users USING btree (email);
+
+
+--
+-- Name: index_admin_users_on_reset_password_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_admin_users_on_reset_password_token ON public.admin_users USING btree (reset_password_token);
+
+
+--
+-- Name: index_appointments_on_client_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_appointments_on_client_id ON public.appointments USING btree (client_id);
+
+
+--
+-- Name: index_appointments_on_ending; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_appointments_on_ending ON public.appointments USING btree (ending);
+
+
+--
+-- Name: index_appointments_on_starting; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_appointments_on_starting ON public.appointments USING btree (starting);
+
+
+--
+-- Name: index_clients_on_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_clients_on_email ON public.clients USING btree (email);
+
+
+--
+-- Name: index_clients_on_email_and_phone; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_clients_on_email_and_phone ON public.clients USING btree (email, phone);
+
+
+--
+-- Name: index_clients_on_first_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_clients_on_first_name ON public.clients USING btree (first_name);
+
+
+--
+-- Name: index_clients_on_last_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_clients_on_last_name ON public.clients USING btree (last_name);
+
+
+--
+-- Name: index_clients_on_phone; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_clients_on_phone ON public.clients USING btree (phone);
+
+
+--
+-- Name: index_developers_on_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_developers_on_email ON public.developers USING btree (email);
+
+
+--
+-- Name: index_tasks_on_developer_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_developer_id ON public.tasks USING btree (developer_id);
+
+
+--
+-- Name: index_tasks_on_due_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_due_date ON public.tasks USING btree (due_date);
+
+
+--
+-- Name: active_storage_attachments audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.active_storage_attachments FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
+-- Name: active_storage_blobs audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.active_storage_blobs FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
+-- Name: admin_users audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admin_users FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('false', 'id', '{encrypted_password,reset_password_token}');
+
+
+--
+-- Name: active_admin_comments audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.active_admin_comments FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
+-- Name: developers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.developers FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('false', 'id', '{password}');
+
+
+--
+-- Name: tasks audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.tasks FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
+-- Name: clients audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.clients FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
+-- Name: appointments audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.appointments FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
+-- Name: active_storage_attachments audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.active_storage_attachments FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: active_storage_blobs audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.active_storage_blobs FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: admin_users audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admin_users FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('false');
+
+
+--
+-- Name: active_admin_comments audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.active_admin_comments FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: developers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.developers FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('false');
+
+
+--
+-- Name: tasks audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.tasks FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: clients audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.clients FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: appointments audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.appointments FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: clients clients_email_insert; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER clients_email_insert BEFORE INSERT ON public.clients FOR EACH ROW EXECUTE PROCEDURE public.valid_email_trigger();
+
+
+--
+-- Name: clients clients_email_update; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER clients_email_update BEFORE UPDATE ON public.clients FOR EACH ROW WHEN ((new.email IS DISTINCT FROM old.email)) EXECUTE PROCEDURE public.valid_email_trigger();
+
+
+--
+-- Name: developers developers_on_insert; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER developers_on_insert BEFORE INSERT ON public.developers FOR EACH ROW EXECUTE PROCEDURE public.developer_changed();
+
+
+--
+-- Name: developers developers_on_update; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER developers_on_update BEFORE UPDATE ON public.developers FOR EACH ROW EXECUTE PROCEDURE public.developer_changed();
+
+
+--
+-- Name: appointments fk_rails_6497fe64e8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.appointments
+    ADD CONSTRAINT fk_rails_6497fe64e8 FOREIGN KEY (client_id) REFERENCES public.clients(id);
+
+
+--
+-- Name: tasks fk_rails_6d1c8e9ace; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT fk_rails_6d1c8e9ace FOREIGN KEY (developer_id) REFERENCES public.developers(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20180518042090'),
+('20180518053307'),
+('20180518054010'),
+('20180519191803'),
+('20180519191838'),
+('20180519191840'),
+('20180519191860'),
+('20180621172346'),
 ('20180725160802'),
 ('20180725201614'),
 ('20180725233004'),

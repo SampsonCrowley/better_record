@@ -7,12 +7,12 @@ module ActiveRecord
 
         binds << last_reflection.join_id_for(owner)
         if last_reflection.type
-          binds << owner.class.__send__(last_reflection.options[:primary_type].presence || :table_name)
+          binds << BetterRecord::PolymorphicOverride.polymorphic_value(owner.class, last_reflection.options.presence)
         end
 
         chain.each_cons(2).each do |reflection, next_reflection|
           if reflection.type
-            binds << next_reflection.klass.__send__(reflection.options[:primary_type].presence || next_reflection[:primary_type].presence || :table_name)
+            binds << BetterRecord::PolymorphicOverride.polymorphic_value(next_reflection.klass, (reflection.options[:primary_type].present? ? reflection.options : next_reflection.options))
           end
         end
         binds
@@ -29,7 +29,7 @@ module ActiveRecord
           scope = apply_scope(scope, table, key, value)
 
           if reflection.type
-            polymorphic_type = transform_value(owner.class.__send__(reflection.options[:primary_type].presence || :table_name))
+            polymorphic_type = transform_value(BetterRecord::PolymorphicOverride.polymorphic_value(owner.class, reflection.options))
             scope = apply_scope(scope, table, reflection.type, polymorphic_type)
           end
 
@@ -46,7 +46,7 @@ module ActiveRecord
           constraint = table[key].eq(foreign_table[foreign_key])
 
           if reflection.type
-            value = transform_value(next_reflection.klass.__send__(reflection.options[:primary_type].presence || :table_name))
+            value = transform_value(BetterRecord::PolymorphicOverride.polymorphic_value(next_reflection.klass, reflection.options))
             scope = apply_scope(scope, table, reflection.type, value)
           end
 
@@ -57,7 +57,7 @@ module ActiveRecord
     module Builder
       class Association
         def self.valid_options(options)
-          VALID_OPTIONS + [ :primary_type ] + Association.extensions.flat_map(&:valid_options)
+          VALID_OPTIONS + [ :primary_type, :strict_primary_type ] + Association.extensions.flat_map(&:valid_options)
         end
       end
     end
@@ -67,6 +67,16 @@ module ActiveRecord
         type = owner[reflection.foreign_type]
         type.presence && type.capitalize.singularize.constantize
       end
+
+      private
+        def replace_keys(record)
+          super
+          owner[reflection.foreign_type] = record ? get_type_value(record) : nil
+        end
+
+        def get_type_value(record)
+          BetterRecord::PolymorphicOverride.polymorphic_value(record.class, reflection.options)
+        end
     end
   end
 end

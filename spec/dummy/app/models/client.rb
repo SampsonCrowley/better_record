@@ -1,6 +1,4 @@
-class ApplicationRecord < BetterRecord::Base
-  self.abstract_class = true
-
+class Client < ApplicationRecord
   # == Constants ============================================================
 
   # == Attributes ===========================================================
@@ -8,6 +6,7 @@ class ApplicationRecord < BetterRecord::Base
   # == Extensions ===========================================================
 
   # == Relationships ========================================================
+  has_many :appointments, inverse_of: :client
 
   # == Validations ==========================================================
 
