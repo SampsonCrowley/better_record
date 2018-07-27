@@ -82,9 +82,59 @@ class CreateBetterRecordDBFunctions < ActiveRecord::Migration[5.2]
       LANGUAGE plpgsql;
     SQL
 
+    execute <<-SQL
+      CREATE OR REPLACE FUNCTION unique_random_string(table_name text, column_name text, string_length integer)
+      RETURNS text AS
+      $BODY$
+        DECLARE
+          key TEXT;
+          qry TEXT;
+          found TEXT;
+          letter TEXT;
+          iterator INTEGER;
+        BEGIN
+
+          qry := 'SELECT ' || column_name || ' FROM ' || table_name || ' WHERE ' || column_name || '=';
+
+          LOOP
+
+            key := '';
+            iterator := 0;
+
+            WHILE iterator < string_length
+            LOOP
+
+              SELECT c INTO letter
+              FROM regexp_split_to_table(
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                ''
+              ) c
+              ORDER BY random()
+              LIMIT 1;
+
+              key := key || letter;
+
+              iterator := iterator + 1;
+            END LOOP;
+
+            EXECUTE qry || quote_literal(key) INTO found;
+
+            IF found IS NULL THEN
+              EXIT;
+            END IF;
+
+          END LOOP;
+
+          RETURN key;
+        END;
+      $BODY$
+      LANGUAGE plpgsql;
+    SQL
+
   end
 
   def down
+    execute 'DROP FUNCTION IF EXISTS unique_random_string();'
     execute 'DROP FUNCTION IF EXISTS valid_email_trigger();'
     execute 'DROP FUNCTION IF EXISTS validate_email();'
     execute 'DROP FUNCTION IF EXISTS temp_table_exists();'
