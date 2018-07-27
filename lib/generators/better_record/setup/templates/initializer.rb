@@ -4,7 +4,7 @@ module BetterRecord
   #                                                                #
   #   default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD    #
   #              db_audit_schema: BR_DB_AUDIT_SCHEMA               #
-  #        has_audits_by_default: BR_ADD_HAS_MANY                  #
+  #        has_auditing_relation_by_default: BR_ADD_HAS_MANY                  #
   #          audit_relation_name: BR_AUDIT_RELATION_NAME           #
   #              layout_template: BR_LAYOUT_TEMPLATE               #
   #              app_domain_name: APP_DOMAIN_NAME                  #
@@ -23,7 +23,7 @@ module BetterRecord
   # uncomment the following line to add an association for table audits
   # directly to ActiveRecord::Base. DEFAULT - false
 
-  # self.has_audits_by_default = true
+  # self.has_auditing_relation_by_default = true
 
   # uncomment the following line to change the association name for
   # auditing lookups. DEFAULT - :audits

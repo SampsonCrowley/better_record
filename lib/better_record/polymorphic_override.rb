@@ -6,6 +6,7 @@ module BetterRecord
       begin
         type_val = klass.__send__(type_method)
       rescue
+        puts type_method, klass, type_val
         if type_val == :table_name_without_schema
           type_val = klass.table_name
         else
@@ -21,7 +22,8 @@ module BetterRecord
 
     def self.all_types(klass)
       keys = [ :polymorphic_name, :table_name ]
-      key |= [BetterRecord.default_polymorphic_method] if BetterRecord.default_polymorphic_method.present?
+      keys |= [BetterRecord.default_polymorphic_method] if BetterRecord.default_polymorphic_method.present?
+      p keys
       values = []
       keys.each do |k|
         val = nil

@@ -106,10 +106,6 @@ RSpec.describe Developer, type: :model do
         expect(build(:developer).avatar).to be_a_kind_of(ActiveStorage::Attached::One)
       end
 
-      [ :avatar_attachment, :avatar_blob ].each do |avatar_sub_class|
-
-      end
-
       describe 'attachment' do
         let(:t) { described_class.reflect_on_association(:avatar_attachment) }
         it "has one" do
@@ -123,7 +119,7 @@ RSpec.describe Developer, type: :model do
           expect(t.type.to_s).to eq("#{t.options[:as]}_type")
         end
 
-        [ :polymorphic_name, :table_name, :table_name_without_schema ].each do |default_method|
+        [ :polymorphic_name, :table_name, :table_name_without_schema, :table_name_with_schema ].each do |default_method|
           describe "when default polymorphic method = :#{default_method}" do
             let(:association_type) do
               BetterRecord.default_polymorphic_method = default_method
@@ -132,8 +128,9 @@ RSpec.describe Developer, type: :model do
 
             current_method = default_method.to_s.sub('_without_schema', '').to_sym
 
-            it "uses #{current_method} as foreign_type" do
-              expect(association_type).to eq(described_class.__send__ current_method)
+            it "uses #{default_method} as foreign_type" do
+              expect(association_type).to eq(described_class.__send__ default_method)
+              expect(association_type).to_not eq(described_class.__send__ current_method) unless described_class.__send__(current_method) == described_class.__send__(default_method)
             end
           end
         end

@@ -1,3 +1,5 @@
+require 'active_record/reflection'
+
 module ActiveRecord
   module Reflection
     class AbstractReflection
