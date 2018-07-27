@@ -14,8 +14,16 @@ module Current
   # == Callbacks ============================================================
 
   # == Class Methods ========================================================
+  def self.user
+    BetterRecord::Current.user
+  end
+
   def self.user=(user)
     set_user(user)
+  end
+
+  def self.ip_address
+    BetterRecord::Current.user
   end
 
   def self.ip_address=(user)
@@ -31,7 +39,7 @@ module Current
     BetterRecord::Current.user = nil
     BetterRecord::Current.ip_address = nil
   end
-  
+
   # == Instance Methods =====================================================
 
 end
