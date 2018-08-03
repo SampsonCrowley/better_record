@@ -18,4 +18,6 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.acronym 'DBs'
   inflect.acronym 'GNU'
   inflect.acronym 'GNUs'
+  inflect.acronym 'JWT'
+  inflect.acronym 'JWTs'
 end

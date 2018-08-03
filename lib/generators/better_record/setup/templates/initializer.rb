@@ -40,3 +40,8 @@ module BetterRecord
 
   # self.app_domain_name = 'default_app_name.com'
 end
+
+# uncomment the following lines to set the keys needed for JWT token auth
+
+# BetterRecord::JWT.signing_key = ENV.fetch('JWT_SIGNING_KEY') { nil }
+# BetterRecord::JWT.encryption_key = ENV.fetch('JWT_ENCRYPTION_KEY') { nil }
