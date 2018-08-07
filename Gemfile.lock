@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    better_record (0.8.0)
+    better_record (0.8.1)
       jwe
       jwt
       pg (~> 1.0, >= 1.0.0)

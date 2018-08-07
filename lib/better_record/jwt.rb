@@ -56,5 +56,72 @@ module BetterRecord
       alias_method :decrypt, :decode
       alias_method :deflate, :decode
     end
+
+    module ControllerMethods
+      protected
+        def check_user
+          if logged_in?
+            begin
+              data = current_user_session_data
+              if  !data[:created_at] ||
+                  (data[:created_at].to_i > 14.days.ago.to_i)
+                if user = session_class.find_by(session_column => data[:user_id])
+                  session[:current_user] = create_jwt(user, data) if data[:created_at] < 1.hour.ago
+                  set_user(user)
+                else
+                  throw 'User Not Found'
+                end
+              else
+                throw 'Token Expired'
+              end
+            rescue
+              session.delete(:current_user)
+              BetterRecord::Current.drop_values
+            end
+          end
+
+          BetterRecord::Current.user || false
+        end
+
+        def create_jwt(user, additional_headers = {})
+          additional_headers = {} unless additional_headers && additional_headers.is_a?(Hash)
+          data = nil
+          data = session_data ? session_data.call(user) : {
+            user_id: user.__send__(session_column),
+            created_at: Time.now.to_i
+          }
+          BetterRecord::JWT.encode(data.merge(additional_headers.except(*data.keys)))
+        end
+
+        def create_session_from_certificate(cert)
+          user = (certificate_session_class || session_class).
+          find_by(certificate_session_column => cert.clean_certificate)
+
+          if user
+            if  certificate_session_user_method &&
+                user.respond_to?(certificate_session_user_method)
+              user = user.__send__(certificate_session_user_method)
+            end
+
+            session[:current_user] = create_jwt(user, { has_certificate: true })
+          end
+        end
+
+        def current_user
+          BetterRecord::Current.user || check_user
+        end
+
+        def current_user_session_data
+          logged_in? ? JWT.decode(session[:current_user]).deep_symbolize_keys : {}
+        end
+
+        def logged_in?
+          session[:current_user].present?
+        end
+
+        def set_user(user)
+          BetterRecord::Current.set(user, request.remote_ip)
+        end
+    end
   end
 end

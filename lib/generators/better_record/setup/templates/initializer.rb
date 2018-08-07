@@ -1,14 +1,19 @@
 module BetterRecord
-  ##################################################################
-  #   ALL SETTINGS HERE CAN BE SET THROUGH ENVIRONMENT VARIABLES   #
-  #                                                                #
-  #   default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD    #
-  #              db_audit_schema: BR_DB_AUDIT_SCHEMA               #
-  #        has_auditing_relation_by_default: BR_ADD_HAS_MANY                  #
-  #          audit_relation_name: BR_AUDIT_RELATION_NAME           #
-  #              layout_template: BR_LAYOUT_TEMPLATE               #
-  #              app_domain_name: APP_DOMAIN_NAME                  #
-  ##################################################################
+  ##########################################################################
+  #   THE FOLLOWING SETTINGS CAN ALSO BE SET THROUGH ENVIRONMENT VARIABLES #
+  #                                                                        #
+  #       default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD        #
+  #                  db_audit_schema: BR_DB_AUDIT_SCHEMA                   #
+  # has_auditing_relation_by_default: BR_ADD_HAS_MANY                      #
+  #              audit_relation_name: BR_AUDIT_RELATION_NAME               #
+  #                  layout_template: BR_LAYOUT_TEMPLATE                   #
+  #                  app_domain_name: APP_DOMAIN_NAME                      #
+  #                 after_login_path: BR_AFTER_LOGIN_PATH                  #
+  #                   session_column: BR_SESSION_COLUMN                    #
+  #      session_authenticate_method: BR_SESSION_AUTHENTICATE_METHOD       #
+  #       certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN        #
+  #  certificate_session_user_method: BR_CERTIFICATE_SESSION_USER_METHOD   #
+  ##########################################################################
 
   # uncomment the following line to use table_names instead of model names
   # as the 'type' value in polymorphic relationships
@@ -39,6 +44,33 @@ module BetterRecord
   # runs under. Used in setting DKIM params. DEFAULT - 'non_existant_domain.com'
 
   # self.app_domain_name = 'default_app_name.com'
+
+  # uncomment and set the session_class to enable gem handled session management
+  # all other settings are optional
+
+  # self.session_class = User
+
+  # OPTIONAL #
+
+  # self.after_login_path = Rails.application.routes.url_helpers.root_path
+
+  # self.session_column = :uuid
+
+  # self.session_data = ->(user) do
+  #   {
+  #     user_id: user.uuid,
+  #     first_access: user.first_login_time,
+  #     created_at: Time.now
+  #   }
+  # end
+
+  # self.session_authenticate_method = :check_login
+
+  # self.certificate_session_class = Staff.includes(:user)
+
+  # self.certificate_session_column = :cert_str
+
+  # self.certificate_session_user_method = :user
 end
 
 # uncomment the following lines to set the keys needed for JWT token auth
