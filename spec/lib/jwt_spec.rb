@@ -1,6 +1,14 @@
 require 'rails_helper'
+require 'jwt'
+
+unique_tries = RSpec.configuration.quick_unique? ? 1000 : 1000000
 
 RSpec.describe BetterRecord::JWT do
+  before(:each) do
+    described_class.signing_key = nil
+    described_class.encryption_key = nil
+    described_class.encrypt_options = nil
+  end
   describe '.gen_encryption_key' do
     it 'creates a random 32 byte string' do
       key = described_class.gen_encryption_key
@@ -9,7 +17,7 @@ RSpec.describe BetterRecord::JWT do
       expect(described_class.gen_encryption_key).to be_a(String)
       expect(described_class.gen_encryption_key.size).to eq 32
 
-      1000000.times do
+      unique_tries.times do
         k = described_class.gen_encryption_key
         expect(k).to_not eq key
         expect(k.size).to eq 32
@@ -28,7 +36,7 @@ RSpec.describe BetterRecord::JWT do
 
       expect(described_class.gen_signing_key).to be_a(String)
 
-      1000000.times do
+      unique_tries.times do
         k = described_class.gen_signing_key
         expect(k).to_not eq key
         expect(keys[k]).to_not be_truthy
@@ -74,7 +82,7 @@ RSpec.describe BetterRecord::JWT do
     describe ".#{m}=" do
       it "is an setter for @#{m}" do
         10.times do
-          val = described_class::CHARACTERS.map { described_class::CHARACTERS[rand(described_class::CHARACTERS.size)] }
+          val = described_class.__send__("gen_#{m}")
           described_class.__send__("#{m}=", val)
           expect(described_class.instance_variable_get(inst_v)).to eq val
           expect(described_class.__send__(m)).to eq val
@@ -125,18 +133,41 @@ RSpec.describe BetterRecord::JWT do
   end
 
   describe '.encode' do
+    let(:sample_data) { {data: 'stuff'} }
     it 'encrypts a JWE with .encryption_key and a JWT payload signed by .signing_key' do
-      expect(described_class.encode({data: 'stuff'}).split('.').size).to eq 5
-      expect(described_class.encode({data: 'stuff'})).to match /[^\.]+\.[^\.]*(\.[^\.]+){3}/
+      expect(described_class.encode(sample_data).split('.').size).to eq 5
+      expect(described_class.encode(sample_data)).to match /[^\.]+\.[^\.]*(\.[^\.]+){3}/
+      expect { ::JWE.decrypt(described_class.encode(sample_data), described_class.encryption_key) }.to_not raise_error
+      expect { ::JWE.decrypt(described_class.encode(sample_data), described_class.gen_encryption_key) }.to raise_error(::JWE::InvalidData)
     end
-    
+
     it 'uses direct encryption' do
-      expect(described_class.encode({data: 'stuff'}).split('.')[1].size).to eq 0
+      expect(described_class.encode(sample_data).split('.')[1].size).to eq 0
+    end
+
+    it 'is decodable' do
+      expect(described_class.decode(described_class.encode(sample_data))).to be_truthy
+      expect(described_class.decode(described_class.encode(sample_data))).to be_a(Hash)
+      expect(described_class.decode(described_class.encode(sample_data)).keys).to all( be_a(String) )
+      expect(described_class.decode(described_class.encode(sample_data)).keys).to eq(sample_data.keys.map(&:to_s))
+      expect { described_class.decode(described_class.encode(sample_data)) }.to_not raise_error
+      expect { described_class.decode(described_class.encode(sample_data, nil, described_class.gen_encryption_key)) }.to raise_error(::JWE::InvalidData)
+      expect { described_class.decode(described_class.encode(sample_data, described_class.gen_signing_key)) }.to raise_error(::JWT::VerificationError)
     end
   end
 
   describe '.decode' do
-    it 'retrieves a JWT payload signed by .signing_key from and a JWE encrypted with .encryption_key'
+    let(:signing_key) { described_class.gen_signing_key }
+    let(:encryption_key) { described_class.gen_encryption_key }
+
+    let(:sample_data) { described_class.encode({data: 'stuff'}, signing_key, encryption_key) }
+
+    it 'retrieves a JWT payload signed by .signing_key from a JWE encrypted with .encryption_key' do
+      expect { described_class.decode(sample_data, signing_key, encryption_key) }.to_not raise_error
+      expect { described_class.decode(sample_data, signing_key, described_class.gen_encryption_key) }.to raise_error(::JWE::InvalidData)
+      force_decoded = ::JWT.decode(::JWE.decrypt(sample_data, encryption_key), signing_key, true, algorithm: 'HS512').first
+      expect(described_class.decode(sample_data, signing_key, encryption_key)).to eq(force_decoded)
+    end
   end
 
   [
