@@ -450,6 +450,57 @@ CREATE FUNCTION public.temp_table_exists(character varying) RETURNS boolean
 
 
 --
+-- Name: unique_random_string(text, text, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.unique_random_string(table_name text, column_name text, string_length integer) RETURNS text
+    LANGUAGE plpgsql
+    AS $$
+        DECLARE
+          key TEXT;
+          qry TEXT;
+          found TEXT;
+          letter TEXT;
+          iterator INTEGER;
+        BEGIN
+
+          qry := 'SELECT ' || column_name || ' FROM ' || table_name || ' WHERE ' || column_name || '=';
+
+          LOOP
+
+            key := '';
+            iterator := 0;
+
+            WHILE iterator < string_length
+            LOOP
+
+              SELECT c INTO letter
+              FROM regexp_split_to_table(
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                ''
+              ) c
+              ORDER BY random()
+              LIMIT 1;
+
+              key := key || letter;
+
+              iterator := iterator + 1;
+            END LOOP;
+
+            EXECUTE qry || quote_literal(key) INTO found;
+
+            IF found IS NULL THEN
+              EXIT;
+            END IF;
+
+          END LOOP;
+
+          RETURN key;
+        END;
+      $$;
+
+
+--
 -- Name: valid_email_trigger(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1020,73 +1071,6 @@ ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.id;
 
 
 --
--- Name: test_audits; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.test_audits (
-    id bigint NOT NULL,
-    test_text text,
-    test_date date,
-    test_time timestamp without time zone,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
-);
-
-
---
--- Name: test_audits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.test_audits_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: test_audits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.test_audits_id_seq OWNED BY public.test_audits.id;
-
-
---
--- Name: test_custom_audits; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.test_custom_audits (
-    id bigint NOT NULL,
-    test_text text,
-    test_date date,
-    test_time timestamp without time zone,
-    test_skipped_column text,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
-);
-
-
---
--- Name: test_custom_audits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.test_custom_audits_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: test_custom_audits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.test_custom_audits_id_seq OWNED BY public.test_custom_audits.id;
-
-
---
 -- Name: logged_actions event_id; Type: DEFAULT; Schema: auditing; Owner: -
 --
 
@@ -1147,20 +1131,6 @@ ALTER TABLE ONLY public.developers ALTER COLUMN id SET DEFAULT nextval('public.d
 --
 
 ALTER TABLE ONLY public.tasks ALTER COLUMN id SET DEFAULT nextval('public.tasks_id_seq'::regclass);
-
-
---
--- Name: test_audits id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.test_audits ALTER COLUMN id SET DEFAULT nextval('public.test_audits_id_seq'::regclass);
-
-
---
--- Name: test_custom_audits id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.test_custom_audits ALTER COLUMN id SET DEFAULT nextval('public.test_custom_audits_id_seq'::regclass);
 
 
 --
@@ -1257,22 +1227,6 @@ ALTER TABLE ONLY public.schema_migrations
 
 ALTER TABLE ONLY public.tasks
     ADD CONSTRAINT tasks_pkey PRIMARY KEY (id);
-
-
---
--- Name: test_audits test_audits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.test_audits
-    ADD CONSTRAINT test_audits_pkey PRIMARY KEY (id);
-
-
---
--- Name: test_custom_audits test_custom_audits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.test_custom_audits
-    ADD CONSTRAINT test_custom_audits_pkey PRIMARY KEY (id);
 
 
 --
@@ -1599,17 +1553,15 @@ ALTER TABLE ONLY public.tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
-('20180518042090'),
-('20180518053307'),
-('20180518054010'),
-('20180519191803'),
-('20180519191838'),
-('20180519191840'),
-('20180519191860'),
-('20180621172346'),
 ('20180725160802'),
 ('20180725201614'),
-('20180725233004'),
-('20180725233007');
+('20180729042090'),
+('20180729053307'),
+('20180729054010'),
+('20180730191803'),
+('20180730191838'),
+('20180730191840'),
+('20180730191860'),
+('20180731172346');
 
 

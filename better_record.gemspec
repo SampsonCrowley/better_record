@@ -27,8 +27,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'store_as_int', '~> 0.0', '>= 0.0.15'
   s.add_dependency 'pry-rails', '~> 0.3', '>=0.3.6'
   s.add_dependency 'table_print', '~> 1.5', '>= 1.5.6'
-  s.add_dependency 'jwt'
-  s.add_dependency 'jwe'
+  s.add_dependency 'jwt', '~> 2.1', '>= 2.1.0'
+  s.add_dependency 'jwe', '~> 0.3', '>= 0.3.1'
+  s.add_dependency 'csv', '~> 3.0', '>=3.0.0'
 
   s.add_development_dependency 'rspec-rails', '~> 3.7', '>= 3.7.2'
   # s.add_development_dependency 'capybara'

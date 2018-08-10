@@ -15,3 +15,4 @@ gemspec
 # gem 'byebug', group: [:development, :test]
 gem 'pry-rails', '>=0.3.6'
 gem 'table_print', '>=1.5.6'
+gem 'csv', '3.0.0'

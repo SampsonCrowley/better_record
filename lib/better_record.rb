@@ -1,5 +1,6 @@
-require "active_support"
-require "active_record"
+require 'active_support'
+require 'active_record'
+require 'csv'
 
 Dir.glob("#{File.expand_path(__dir__)}/core_ext/*.rb").each do |d|
   require d

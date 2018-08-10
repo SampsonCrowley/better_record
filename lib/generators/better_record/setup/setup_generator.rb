@@ -7,7 +7,7 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
   class_option :eject, type: :boolean, default: false
 
   def run_generator
-    route 'mount BetterRecord::Engine => "/better_record"'
+    mount_engine
     copy_templates
     copy_migrations
     gsub_files
@@ -37,23 +37,6 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
       eject_files if !!options['eject']
     end
 
-    def gsub_files
-      eager_line = 'config.eager_load_paths += Dir["#{config.root}/lib/modules/**/"]'
-      structure_line = 'config.active_record.schema_format'
-
-      gsub_file 'config/application.rb', /([ \t]*?(#{Regexp.escape(eager_line)}|#{Regexp.escape(structure_line)})[ ='":]*?(rb|sql)?['"]?[ \t0-9\.]*?)\n/mi do |match|
-        ""
-      end
-
-      gsub_file 'config/application.rb', /#{Regexp.escape("config.load_defaults")}[ 0-9\.]+\n/mi do |match|
-        "#{match}    #{eager_line}\n    #{structure_line} = :sql\n"
-      end
-
-      gsub_file 'app/models/application_record.rb', /(#{Regexp.escape("class ApplicationRecord < ActiveRecord::Base")})/mi do |match|
-        "class ApplicationRecord < BetterRecord::Base"
-      end
-    end
-
     def eject_files
       template "#{BetterRecord::Engine.root}/db/postgres-audit-trigger.psql", 'db/postgres-audit-trigger.psql'
       template "#{BetterRecord::Engine.root}/lib/better_record.rb", 'lib/better_record.rb'
@@ -73,6 +56,32 @@ class BetterRecord::SetupGenerator < ActiveRecord::Generators::Base
       gsub_file 'config/application.rb', /class Application.*?\n/mi do |match|
         "#{match}    #{r_line}\n"
       end
+    end
+
+    def gsub_files
+      eager_line = 'config.eager_load_paths += Dir["#{config.root}/lib/modules/**/"]'
+      structure_line = 'config.active_record.schema_format'
+
+      gsub_file 'config/application.rb', /([ \t]*?(#{Regexp.escape(eager_line)}|#{Regexp.escape(structure_line)})[ ='":]*?(rb|sql)?['"]?[ \t0-9\.]*?)\n/mi do |match|
+        ""
+      end
+
+      gsub_file 'config/application.rb', /#{Regexp.escape("config.load_defaults")}[ 0-9\.]+\n/mi do |match|
+        "#{match}    #{eager_line}\n    #{structure_line} = :sql\n"
+      end
+
+      gsub_file 'app/models/application_record.rb', /(#{Regexp.escape("class ApplicationRecord < ActiveRecord::Base")})/mi do |match|
+        "class ApplicationRecord < BetterRecord::Base"
+      end
+    end
+
+    def mount_engine
+      in_root do
+        File.open('config/routes.rb', 'r') do |file|
+          return false if file.read =~ /mount\s+BetterRecord::Engine/
+        end
+      end
+      route 'mount BetterRecord::Engine => "/better_record"'
     end
 
     def migration_path

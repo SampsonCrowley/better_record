@@ -64,7 +64,7 @@ RSpec.describe BetterRecord::JWT do
   ].each do |m|
     inst_v = "@#{m}".to_sym
     describe ".#{m}" do
-      it "is getter for @#{m}" do
+      it "is a getter for @#{m}" do
         expect(described_class.__send__(m)).to_not be_nil
         expect(described_class.instance_variable_get(inst_v)).to_not be_nil
         expect(described_class.__send__(m)).to eq described_class.instance_variable_get(inst_v)
@@ -100,7 +100,7 @@ RSpec.describe BetterRecord::JWT do
   end
 
   describe ".encrypt_options" do
-    it "is getter for @encrypt_options" do
+    it "is a getter for @encrypt_options" do
       expect(described_class.encrypt_options).to_not be_nil
       expect(described_class.instance_variable_get(:@encrypt_options)).to_not be_nil
       expect(described_class.encrypt_options).to eq described_class.instance_variable_get(:@encrypt_options)
