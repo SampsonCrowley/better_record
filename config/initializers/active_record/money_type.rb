@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MoneyType < ActiveRecord::Type::Value
   def cast(value)
     return nil unless value

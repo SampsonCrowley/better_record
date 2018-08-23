@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   class TableSize < Base
     # == Constants ============================================================

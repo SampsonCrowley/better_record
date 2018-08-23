@@ -26,6 +26,8 @@ module BetterRecord
     # == Class Methods ========================================================
 
     # == Instance Methods =====================================================
-
+    def indifferent_attributes
+      attributes.with_indifferent_access
+    end
   end
 end

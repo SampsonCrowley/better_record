@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Boolean
   def self.parse(value)
     ActiveRecord::Type::Boolean.new.cast(value)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if defined?(Redis) && defined?(Redis::Namespace)
 
   begin

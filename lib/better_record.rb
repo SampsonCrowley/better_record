@@ -63,7 +63,6 @@ ActiveSupport.on_load(:active_record) do
       include BetterRecord::Migration
     end
   end
-  include BetterRecord::NullifyBlankAttributes
 end
 # !centered[## [Men's Results](/assets/pdfs/2018-golf-international-results-male.pdf)--br--[![Mens Results](/assets/images/2018-golf-international-results-male.jpg)](/assets/pdfs/2018-golf-international-results-male.pdf)]
 # !centered[## [Women's Results](/assets/pdfs/2018-golf-international-results-female.pdf)--br--[![Womens Results](/assets/images/2018-golf-international-results-female.jpg)](/assets/pdfs/2018-golf-international-results-female.pdf)]

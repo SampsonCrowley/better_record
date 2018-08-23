@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Date
   def month_name
     Date::MONTHNAMES[month]

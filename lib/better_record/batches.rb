@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   module Batches
     def split_batches(options = {}, &block)

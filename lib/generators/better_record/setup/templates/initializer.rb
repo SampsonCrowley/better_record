@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   ##########################################################################
   #   THE FOLLOWING SETTINGS CAN ALSO BE SET THROUGH ENVIRONMENT VARIABLES #

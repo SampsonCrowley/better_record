@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 <% module_namespacing do -%>
 require 'rails_helper'
 

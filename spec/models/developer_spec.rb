@@ -3,6 +3,17 @@ require 'rails_helper'
 RSpec.describe Developer, type: :model do
   has_valid_factory(:developer)
 
+  describe '#indifferent_attributes' do
+    let(:developer) { create(:developer) }
+
+    it 'returns the "attributes" hash with indifferent access' do
+      developer.attributes.each do |k , v|
+        expect(developer.indifferent_attributes[k.to_s]).to eq(v)
+        expect(developer.indifferent_attributes[k.to_sym]).to eq(v)
+      end
+    end
+  end
+
   describe 'Attributes' do
     #      email: :string, required
     #   password: :text, required
@@ -11,6 +22,8 @@ RSpec.describe Developer, type: :model do
     #       last: :string, required
     #     suffix: :string
     #        dob: :date, required
+    # text_array: :text, required
+    #  int_array: :integer, required
     # created_at: :datetime, required
     # updated_at: :datetime, required
 
@@ -29,7 +42,12 @@ RSpec.describe Developer, type: :model do
     end
 
     [ :middle, :suffix ].each do |nm|
-      optional_column(:developer, nm)
+      optional_column(:developer, nm) do
+        it 'cooerces blank values to nil' do
+          record[nm] = ''
+          expect(record.__send__(nm)).to eq nil
+        end
+      end
     end
 
     required_column(:developer, :email, true) do
@@ -67,6 +85,41 @@ RSpec.describe Developer, type: :model do
         record.dob = 13.years.ago.to_date
         expect(record.valid?).to be true
         expect(record.errors[:dob]).to be_empty
+      end
+    end
+
+    optional_column(:developer, :int_array) do
+      it "converts values to an integer array" do
+        [
+          nil,
+          'asdf',
+          [1, nil, 3]
+        ].each do |val|
+          record.int_array = val
+          expect(record.int_array).to eq([val].flatten.select(&:present?).map(&:to_i))
+        end
+      end
+    end
+
+    optional_column(:developer, :text_array) do
+      it "converts values to a text array" do
+        [
+          nil,
+          'asdf',
+          [1, nil, 3]
+        ].each do |val|
+          record.text_array = val
+          expect(record.text_array).to eq([val].flatten.select(&:present?).map(&:to_s))
+        end
+      end
+    end
+
+    optional_column(:developer, :bool_col) do
+      it "parses to a boolean" do
+        [ nil, 0, 1, "true", "false", true, false ].each do |val|
+          record.bool_col = val
+          expect(record.bool_col).to eq(Boolean.parse(val))
+        end
       end
     end
 

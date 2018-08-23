@@ -8,6 +8,10 @@ class CreateDevelopers < ActiveRecord::Migration[5.2]
       t.string :last, null: false
       t.string :suffix
       t.date :dob, null: false
+      t.text :text_array, null: false, array:true, default: []
+      t.integer :int_array, null: false, array:true, default: []
+      t.jsonb :json_col, null: false, default: {}
+      t.boolean :bool_col, null: false, default: false
 
       t.timestamps default: -> { 'NOW()' }
 

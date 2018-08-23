@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 BetterRecord::Engine.routes.draw do
   root to: 'table_sizes#index'
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   module Relation
     # pluck_in_batches:  yields an array of *columns that is at least size

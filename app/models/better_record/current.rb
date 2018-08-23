@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   class Current < ActiveSupport::CurrentAttributes
     attribute :user, :ip_address

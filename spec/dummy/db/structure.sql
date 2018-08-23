@@ -1003,6 +1003,10 @@ CREATE TABLE public.developers (
     last character varying NOT NULL,
     suffix character varying,
     dob date NOT NULL,
+    text_array text[] DEFAULT '{}'::text[] NOT NULL,
+    int_array integer[] DEFAULT '{}'::integer[] NOT NULL,
+    json_col jsonb DEFAULT '{}'::jsonb NOT NULL,
+    bool_col boolean DEFAULT false NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );

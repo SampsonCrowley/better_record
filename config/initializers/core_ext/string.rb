@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class String
   def self.clean_certificate(str)
     CGI.unescape(str).gsub(/(\n|-----(BEGIN|END) CERTIFICATE-----)/, '').strip

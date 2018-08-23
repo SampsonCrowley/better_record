@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Integer
   def self.models
     @@record_models ||= Hash[*Dir[Rails.root.join('app', 'models', '**.rb')].map do |file|

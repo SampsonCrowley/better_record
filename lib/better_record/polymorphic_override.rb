@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   class PolymorphicOverride
     def self.polymorphic_value(klass, options = nil)

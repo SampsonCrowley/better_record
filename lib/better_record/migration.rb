@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   module Migration
     def audit_table(table_name, rows = nil, query_text = nil, skip_columns = nil)

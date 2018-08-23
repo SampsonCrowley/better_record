@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'stringio'
 
 # Custom matcher to test text written to standard output and standard error

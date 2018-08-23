@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/concern'
 require 'active_record/base'
 
@@ -6,6 +8,7 @@ module BetterRecord
     extend ActiveSupport::Concern
 
     included do
+      include AttributeMethods::Write
       before_validation :set_booleans
     end
 
@@ -22,7 +25,7 @@ module BetterRecord
         longest_name = 0
         column_names.each {|nm| longest_name = nm.length if nm.length > longest_name}
         longest_name += 1
-        str = ''
+        str = ''.dup
         columns.each do |col|
           unless col.name == 'id'
             spaces = "#{' ' * (longest_name - col.name.length)}"
