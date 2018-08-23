@@ -20,7 +20,7 @@ module BetterRecord
         when ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Jsonb
           value.presence || {}
         when ActiveRecord::Type::Boolean
-          Boolean.parse(value)
+          BetterRecord.strict_booleans ? Boolean.strict_parse(value) : Boolean.parse(value)
         else
           value.presence
         end

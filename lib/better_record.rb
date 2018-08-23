@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require 'active_support'
 require 'active_record'
+require 'active_record/type'
 require 'csv'
 
 Dir.glob("#{File.expand_path(__dir__)}/core_ext/*.rb").each do |d|
@@ -8,6 +11,7 @@ end
 
 module BetterRecord
   ATTRIBUTE_METHODS = [
+    :strict_booleans,
     :default_polymorphic_method,
     :db_audit_schema,
     :has_auditing_relation_by_default,
@@ -37,9 +41,10 @@ module BetterRecord
       end
   end
 
+  self.strict_booleans = Boolean.strict_parse((ENV.fetch('BR_STRICT_BOOLEANS') { false }))
   self.default_polymorphic_method = (ENV.fetch('BR_DEFAULT_POLYMORPHIC_METHOD') { :polymorphic_name }).to_sym
   self.db_audit_schema = ENV.fetch('BR_DB_AUDIT_SCHEMA') { 'auditing' }
-  self.has_auditing_relation_by_default = ActiveRecord::Type::Boolean.new.cast(ENV.fetch('BR_ADD_HAS_MANY') { true })
+  self.has_auditing_relation_by_default = Boolean.strict_parse(ENV.fetch('BR_ADD_HAS_MANY') { true })
   self.audit_relation_name = (ENV.fetch('BR_AUDIT_RELATION_NAME') { 'logged_actions' }).to_sym
   self.layout_template = (ENV.fetch('BR_LAYOUT_TEMPLATE') { 'better_record/layout' }).to_s
   self.app_domain_name = (ENV.fetch('APP_DOMAIN_NAME') { 'non_existant_domain.com' }).to_s

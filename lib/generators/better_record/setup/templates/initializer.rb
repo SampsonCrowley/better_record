@@ -4,6 +4,7 @@ module BetterRecord
   ##########################################################################
   #   THE FOLLOWING SETTINGS CAN ALSO BE SET THROUGH ENVIRONMENT VARIABLES #
   #                                                                        #
+  #                  strict_booleans: BR_STRICT_BOOLEANS                   #
   #       default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD        #
   #                  db_audit_schema: BR_DB_AUDIT_SCHEMA                   #
   # has_auditing_relation_by_default: BR_ADD_HAS_MANY                      #
@@ -16,6 +17,10 @@ module BetterRecord
   #       certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN        #
   #  certificate_session_user_method: BR_CERTIFICATE_SESSION_USER_METHOD   #
   ##########################################################################
+
+  # uncomment the following line to disable three-state booleans in models
+
+  # self.strict_booleans = true
 
   # uncomment the following line to use table_names instead of model names
   # as the 'type' value in polymorphic relationships

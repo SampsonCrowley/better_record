@@ -115,12 +115,27 @@ RSpec.describe Developer, type: :model do
     end
 
     optional_column(:developer, :bool_col) do
-      it "parses to a boolean" do
-        [ nil, 0, 1, "true", "false", true, false ].each do |val|
-          record.bool_col = val
-          expect(record.bool_col).to eq(Boolean.parse(val))
+      context 'loose booleans' do
+        it "parses to a three-state boolean" do
+          BetterRecord.strict_booleans = false
+          [ nil, 0, 1, "true", "false", true, false ].each do |val|
+            record.bool_col = val
+            expect(record.bool_col).to eq(Boolean.parse(val))
+          end
         end
       end
+
+      context 'strict booleans' do
+        it "parses to a two-state boolean" do
+          BetterRecord.strict_booleans = true
+          [ nil, 0, 1, "true", "false", true, false ].each do |val|
+            record.bool_col = val
+            expect(record.bool_col).to eq(Boolean.strict_parse(val))
+          end
+        end
+      end
+
+
     end
 
   end
