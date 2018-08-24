@@ -250,7 +250,7 @@ RSpec.describe Developer, type: :model do
 
         developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
         expect(developer.valid?).to be false
-        expect(developer.errors[:avatar]).to include('is too large, avatar must be < 500KB')
+        expect(developer.errors[:avatar]).to include('is too large, maximum 500 KB')
 
         developer.reload
         expect(developer.avatar.attached?).to be false
@@ -275,7 +275,7 @@ RSpec.describe Developer, type: :model do
 
         developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
         expect(developer.valid?).to be false
-        expect(developer.errors[:avatar]).to include('is too large, avatar must be < 500KB')
+        expect(developer.errors[:avatar]).to include('is too large, maximum 500 KB')
 
         developer.reload
         expect(developer.avatar.attached?).to be true

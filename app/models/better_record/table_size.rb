@@ -48,6 +48,8 @@ module BetterRecord
     default_scope { where(schema: [ :public ]) }
     # == Callbacks ============================================================
 
+    # == Boolean Class Methods ================================================
+
     # == Class Methods ========================================================
     def self.find_by(*args)
       reload_data
@@ -71,6 +73,8 @@ module BetterRecord
     #     :
     #   ]
     # end
+
+    # == Boolean Methods ======================================================
 
     # == Instance Methods =====================================================
     def changed_columns

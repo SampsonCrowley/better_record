@@ -15,6 +15,8 @@ module Current
 
   # == Callbacks ============================================================
 
+  # == Boolean Class Methods ================================================
+
   # == Class Methods ========================================================
 
   def self.user
@@ -44,6 +46,8 @@ module Current
   def self.drop_values
     BetterRecord::Current.drop_values
   end
+
+  # == Boolean Methods ======================================================
 
   # == Instance Methods =====================================================
 

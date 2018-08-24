@@ -21,11 +21,14 @@ module BetterRecord
       primary_type: :table_name,
       foreign_key: :row_id,
       foreign_type: :table_name
+
     # == Validations ==========================================================
 
     # == Scopes ===============================================================
 
     # == Callbacks ============================================================
+
+    # == Boolean Class Methods ================================================
 
     # == Class Methods ========================================================
     def self.default_print
@@ -40,6 +43,8 @@ module BetterRecord
       ]
     end
 
+    # == Boolean Methods ======================================================
+
     # == Instance Methods =====================================================
     def changed_columns
       (self.changed_fields || {}).keys.join(', ').presence || 'N/A'
@@ -48,5 +53,6 @@ module BetterRecord
     def action_type
       ACTIONS[action] || 'UNKNOWN'
     end
+
   end
 end

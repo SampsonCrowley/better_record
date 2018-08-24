@@ -118,8 +118,6 @@ module BetterRecord
       end
     end
 
-
-    # == Instance Methods =====================================================
     def queue_adapter_inline?
       self.class.queue_adapter_inline?
     end

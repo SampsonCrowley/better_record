@@ -1,6 +1,8 @@
 module BetterRecord
   class Base < ActiveRecord::Base
     self.abstract_class = true
+    include ModelConcerns::HasValidatedAvatar
+    include ModelConcerns::HasProtectedPassword
 
     # == Constants ============================================================
 
@@ -23,11 +25,16 @@ module BetterRecord
 
     # == Callbacks ============================================================
 
+    # == Boolean Class Methods ================================================
+
     # == Class Methods ========================================================
+
+    # == Boolean Methods ======================================================
 
     # == Instance Methods =====================================================
     def indifferent_attributes
       attributes.with_indifferent_access
     end
+
   end
 end
