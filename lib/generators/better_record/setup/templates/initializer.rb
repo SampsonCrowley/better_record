@@ -12,6 +12,7 @@ module BetterRecord
   #                  layout_template: BR_LAYOUT_TEMPLATE                   #
   #                  app_domain_name: APP_DOMAIN_NAME                      #
   #                 after_login_path: BR_AFTER_LOGIN_PATH                  #
+  #                 use_bearer_token: BR_USE_BEARER_TOKEN                  #
   #                   session_column: BR_SESSION_COLUMN                    #
   #      session_authenticate_method: BR_SESSION_AUTHENTICATE_METHOD       #
   #       certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN        #
@@ -58,6 +59,9 @@ module BetterRecord
   # self.session_class = User
 
   # OPTIONAL #
+
+  # set to true to use Auth headers instead of session cookies
+  # self.use_bearer_token = true
 
   # self.after_login_path = Rails.application.routes.url_helpers.root_path
 

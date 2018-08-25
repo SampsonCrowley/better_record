@@ -19,6 +19,7 @@ module BetterRecord
     :layout_template,
     :app_domain_name,
     :after_login_path,
+    :use_bearer_token,
     :session_class,
     :session_column,
     :session_data,
@@ -49,6 +50,7 @@ module BetterRecord
   self.layout_template = (ENV.fetch('BR_LAYOUT_TEMPLATE') { 'better_record/layout' }).to_s
   self.app_domain_name = (ENV.fetch('APP_DOMAIN_NAME') { 'non_existant_domain.com' }).to_s
   self.after_login_path = (ENV.fetch('BR_AFTER_LOGIN_PATH') { nil })
+  self.use_bearer_token = Boolean.strict_parse(ENV.fetch('BR_USE_BEARER_TOKEN') { false })
   self.session_column = (ENV.fetch('BR_SESSION_COLUMN') { :id }).to_sym
   self.session_authenticate_method = (ENV.fetch('BR_SESSION_AUTHENTICATE_METHOD') { :authenticate }).to_sym
   self.certificate_session_column = (ENV.fetch('BR_CERTIFICATE_SESSION_COLUMN') { :certificate }).to_sym

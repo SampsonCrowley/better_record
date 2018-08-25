@@ -60,6 +60,24 @@ module BetterRecord
     end
 
     module ControllerMethods
+      include ActionController::HttpAuthentication::Token::ControllerMethods
+
+      def method_missing(method, *args)
+        begin
+          if BetterRecord.attributes[method.to_sym]
+            m = method.to_sym
+            self.class.define_method m do
+              BetterRecord.__send__ m
+            end
+            BetterRecord.__send__ m
+          else
+            raise NoMethodError
+          end
+        rescue NoMethodError
+          super(method, *args)
+        end
+      end
+
       protected
         def check_user
           if logged_in?
@@ -68,7 +86,7 @@ module BetterRecord
               if  !data[:created_at] ||
                   (data[:created_at].to_i > 14.days.ago.to_i)
                 if user = session_class.find_by(session_column => data[:user_id])
-                  session[:current_user] = create_jwt(user, data) if data[:created_at] < 1.hour.ago
+                  current_token = create_jwt(user, data) if data[:created_at] < 1.hour.ago
                   set_user(user)
                 else
                   throw 'User Not Found'
@@ -77,7 +95,7 @@ module BetterRecord
                 throw 'Token Expired'
               end
             rescue
-              session.delete(:current_user)
+              current_token = nil
               BetterRecord::Current.drop_values
             end
           end
@@ -105,7 +123,8 @@ module BetterRecord
               user = user.__send__(certificate_session_user_method)
             end
 
-            session[:current_user] = create_jwt(user, { has_certificate: true })
+            current_token = create_jwt(user, { has_certificate: true })
+            set_user(user)
           end
         end
 
@@ -114,11 +133,39 @@ module BetterRecord
         end
 
         def current_user_session_data
-          logged_in? ? JWT.decode(session[:current_user]).deep_symbolize_keys : {}
+          logged_in? ? JWT.decode(current_token).deep_symbolize_keys : {}
         end
 
         def logged_in?
-          session[:current_user].present?
+          current_token.present?
+        end
+
+        def current_token
+          if use_bearer_token
+            @current_token ||= authenticate_with_http_token do |token, **options|
+              token
+            end
+          else
+            @current_token ||= session[:current_user]
+          end
+        end
+
+        def current_token=(value)
+          @current_token = value
+          if use_bearer_token
+            set_auth_header
+          else
+            if value.blank?
+              session.delete(:current_user)
+            else
+              session[:current_user] = value
+            end
+          end
+          @current_token
+        end
+
+        def set_auth_header
+          response.set_header("AUTH_TOKEN", current_token)
         end
 
         def set_user(user)
