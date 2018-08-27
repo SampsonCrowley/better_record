@@ -3,6 +3,7 @@
 require 'jwt'
 require 'jwe'
 require 'openssl'
+require 'active_support/concern'
 
 module BetterRecord
   class JWT
@@ -60,22 +61,10 @@ module BetterRecord
     end
 
     module ControllerMethods
-      include ActionController::HttpAuthentication::Token::ControllerMethods
+      extend ActiveSupport::Concern
 
-      def method_missing(method, *args)
-        begin
-          if BetterRecord.attributes[method.to_sym]
-            m = method.to_sym
-            self.class.define_method m do
-              BetterRecord.__send__ m
-            end
-            BetterRecord.__send__ m
-          else
-            raise NoMethodError
-          end
-        rescue NoMethodError
-          super(method, *args)
-        end
+      included do
+        include BetterRecord::InjectMethods
       end
 
       protected

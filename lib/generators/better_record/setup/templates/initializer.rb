@@ -61,6 +61,7 @@ module BetterRecord
   # OPTIONAL #
 
   # set to true to use Auth headers instead of session cookies
+
   # self.use_bearer_token = true
 
   # self.after_login_path = Rails.application.routes.url_helpers.root_path
