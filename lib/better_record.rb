@@ -36,6 +36,19 @@ module BetterRecord
 
     attr_accessor *ATTRIBUTE_METHODS
 
+    # ATTRIBUTE_METHODS.each do |method|
+    #   if method.to_s =~ /_class/
+    #     define_method method do
+    #       val = instance_variable_get(:"@#{method}")
+    #       val.is_a?(String) ? __send__(:"#{method}=", val.constantize) : val
+    #     end
+    #
+    #     define_method :"#{method}=" do |val|
+    #       instance_variable_set(:"@#{method}", val)
+    #     end
+    #   end
+    # end
+
     private
       def attrs_hash
         @attrs ||= ATTRIBUTE_METHODS.map {|k| [k, true]}.to_h.with_indifferent_access.freeze
@@ -71,9 +84,3 @@ ActiveSupport.on_load(:active_record) do
     end
   end
 end
-# !centered[## [Men's Results](/assets/pdfs/2018-golf-international-results-male.pdf)--br--[![Mens Results](/assets/images/2018-golf-international-results-male.jpg)](/assets/pdfs/2018-golf-international-results-male.pdf)]
-# !centered[## [Women's Results](/assets/pdfs/2018-golf-international-results-female.pdf)--br--[![Womens Results](/assets/images/2018-golf-international-results-female.jpg)](/assets/pdfs/2018-golf-international-results-female.pdf)]
-# !centered[## [Team Results](/assets/pdfs/2018-golf-international-results-team.pdf)--br--[![Team Results](/assets/images/2018-golf-international-results-team)](/assets/pdfs/2018-golf-international-results-team.pdf)]
-#
-# !centered[## [Team Results](/assets/pdfs/2018-golf-international-results-summary.pdf)--br--[![Team Results](/assets/images/2018-golf-international-results-summary.jpg)](/assets/pdfs/2018-golf-international-results-summary.pdf)]
-# !centered[## [Individual Results](/assets/pdfs/2018-golf-international-results.pdf)--br--[![Team Results](/assets/images/2018-golf-international-results.jpg)](/assets/pdfs/2018-golf-international-results.pdf)]

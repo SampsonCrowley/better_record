@@ -2,6 +2,7 @@ module BetterRecord
   ##########################################################################
   #   THE FOLLOWING SETTINGS CAN ALSO BE SET THROUGH ENVIRONMENT VARIABLES #
   #                                                                        #
+  #                  strict_booleans: BR_STRICT_BOOLEANS                   #
   #       default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD        #
   #                  db_audit_schema: BR_DB_AUDIT_SCHEMA                   #
   # has_auditing_relation_by_default: BR_ADD_HAS_MANY                      #
@@ -9,6 +10,7 @@ module BetterRecord
   #                  layout_template: BR_LAYOUT_TEMPLATE                   #
   #                  app_domain_name: APP_DOMAIN_NAME                      #
   #                 after_login_path: BR_AFTER_LOGIN_PATH                  #
+  #                 use_bearer_token: BR_USE_BEARER_TOKEN                  #
   #                   session_column: BR_SESSION_COLUMN                    #
   #      session_authenticate_method: BR_SESSION_AUTHENTICATE_METHOD       #
   #       certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN        #
@@ -45,32 +47,41 @@ module BetterRecord
 
   # self.app_domain_name = 'default_app_name.com'
 
-  # uncomment and set the session_class to enable gem handled session management
-  # all other settings are optional
+  # Any code that should be run after the entire application is initialized should go in the following block
 
-  # self.session_class = User
+  ActiveSupport.on_load(:better_record) do
+    # uncomment and set the session_class to enable gem handled session management
+    # all other settings are optional
 
-  # OPTIONAL #
+    self.session_class = Developer
 
-  # self.after_login_path = Rails.application.routes.url_helpers.root_path
+    # OPTIONAL #
 
-  # self.session_column = :uuid
+    # set to true to use Auth headers instead of session cookies
 
-  # self.session_data = ->(user) do
-  #   {
-  #     user_id: user.uuid,
-  #     first_access: user.first_login_time,
-  #     created_at: Time.now
-  #   }
-  # end
+    # self.use_bearer_token = true
 
-  # self.session_authenticate_method = :check_login
+    # self.after_login_path = Rails.application.routes.url_helpers.root_path
 
-  # self.certificate_session_class = Staff.includes(:user)
+    # self.session_column = :uuid
 
-  # self.certificate_session_column = :cert_str
+    # self.session_data = ->(user) do
+    #   {
+    #     user_id: user.uuid,
+    #     first_access: user.first_login_time,
+    #     created_at: Time.now
+    #   }
+    # end
 
-  # self.certificate_session_user_method = :user
+    # self.session_authenticate_method = :check_login
+
+    # self.certificate_session_class = Staff.includes(:user)
+
+    # self.certificate_session_column = :cert_str
+
+    # self.certificate_session_user_method = :user
+  end
+
 end
 
 # uncomment the following lines to set the keys needed for JWT token auth

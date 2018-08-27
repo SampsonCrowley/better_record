@@ -7,5 +7,14 @@ module BetterRecord
         load f
       end
     end
+
+    initializer 'better_record.after_app' do |app|
+      app.config.after_initialize do
+        if BetterRecord.session_class.is_a?(String)
+          BetterRecord.session_class = BetterRecord.session_class.constantize
+        end
+        ActiveSupport.run_load_hooks(:better_record, BetterRecord)
+      end
+    end
   end
 end

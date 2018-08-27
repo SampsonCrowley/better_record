@@ -53,36 +53,42 @@ module BetterRecord
 
   # self.app_domain_name = 'default_app_name.com'
 
-  # uncomment and set the session_class to enable gem handled session management
-  # all other settings are optional
+  # Any code that should be run after the entire application is initialized
+  # should go in the following block
 
-  # self.session_class = User
+  # ActiveSupport.on_load(:better_record) do
+    # uncomment and set the session_class to enable gem handled session management
+    # all other settings below are optional
 
-  # OPTIONAL #
+    # self.session_class = User
 
-  # set to true to use Auth headers instead of session cookies
+    # OPTIONAL #
 
-  # self.use_bearer_token = true
+    # set to true to use Auth headers instead of session cookies
 
-  # self.after_login_path = Rails.application.routes.url_helpers.root_path
+    # self.use_bearer_token = true
 
-  # self.session_column = :uuid
+    # self.after_login_path = Rails.application.routes.url_helpers.root_path
 
-  # self.session_data = ->(user) do
-  #   {
-  #     user_id: user.uuid,
-  #     first_access: user.first_login_time,
-  #     created_at: Time.now
-  #   }
+    # self.session_column = :uuid
+
+    # self.session_data = ->(user) do
+    #   {
+    #     user_id: user.uuid,
+    #     first_access: user.first_login_time,
+    #     created_at: Time.now
+    #   }
+    # end
+
+    # self.session_authenticate_method = :check_login
+
+    # self.certificate_session_class = Staff.includes(:user)
+
+    # self.certificate_session_column = :cert_str
+
+    # self.certificate_session_user_method = :user
   # end
 
-  # self.session_authenticate_method = :check_login
-
-  # self.certificate_session_class = Staff.includes(:user)
-
-  # self.certificate_session_column = :cert_str
-
-  # self.certificate_session_user_method = :user
 end
 
 # uncomment the following lines to set the keys needed for JWT token auth
