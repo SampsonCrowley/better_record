@@ -65,6 +65,7 @@ module BetterRecord
 
       included do
         include BetterRecord::InjectMethods
+        include ActionController::HttpAuthentication::Token::ControllerMethods if BetterRecord.use_bearer_token
       end
 
       protected
@@ -75,7 +76,7 @@ module BetterRecord
               if  !data[:created_at] ||
                   (data[:created_at].to_i > 14.days.ago.to_i)
                 if user = session_class.find_by(session_column => data[:user_id])
-                  current_token = create_jwt(user, data) if data[:created_at] < 1.hour.ago
+                  current_token = create_jwt(user, data) if data[:created_at].to_i < 1.hour.ago.to_i
                   set_user(user)
                 else
                   throw 'User Not Found'
@@ -84,6 +85,7 @@ module BetterRecord
                 throw 'Token Expired'
               end
             rescue
+              p $!.message
               current_token = nil
               BetterRecord::Current.drop_values
             end
