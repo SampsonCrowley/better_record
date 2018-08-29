@@ -56,7 +56,7 @@ class CreateBetterRecordDBFunctions < ActiveRecord::Migration[5.2]
       $BODY$
       BEGIN
         IF email IS NOT NULL THEN
-          IF email !~* '\\A[^@\\s\\;]+@[^@\\s\\;]+\\.[^@\\s\\;]+\\Z' THEN
+          IF email !~* '\\A[^@\\s;./[\\]\\\\]+(\\.[^@\\s;./[\\]\\\\]+)*@[^@\\s;./[\\]\\\\]+(\\.[^@\\s;./[\\]\\\\]+)*\\.[^@\\s;./[\\]\\\\]+\\Z' THEN
             RAISE EXCEPTION 'Invalid E-mail format %', email
                 USING HINT = 'Please check your E-mail format.';
           END IF ;

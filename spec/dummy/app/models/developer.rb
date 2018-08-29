@@ -27,7 +27,7 @@ class Developer < ApplicationRecord
   validate :older_than_12, if: :dob_changed?
 
   validates :email, presence: true,
-                    format: { with: /\A[^@;\/\\]+\@[^@;\/\\]+\.[^@;\.\/\\]+\z/ },
+                    format: { with: /\A[^@\s;.\/\[\]\\]+(\.[^@\s;.\/\[\]\\]+)*@[^@\s;.\/\[\]\\]+(\.[^@\s;.\/\[\]\\]+)*\.[^@\s;.\/\[\]\\]+\z/ },
                     uniqueness: { case_sensitive: false }
 
 
