@@ -36,5 +36,14 @@ module BetterRecord
       attributes.with_indifferent_access
     end
 
+    def dup(allow_full_dup = false)
+      if !allow_full_dup && self.class.const_defined?(:NON_DUPABLE_KEYS)
+        super().tap do |r|
+          r.class::NON_DUPABLE_KEYS.each {|k| r[k] = nil }
+        end
+      else
+        super()
+      end
+    end
   end
 end

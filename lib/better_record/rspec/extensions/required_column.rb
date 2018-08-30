@@ -21,7 +21,14 @@ module BetterRecord
               expect(record.valid?).to be true
               expect(record.save).to be true
 
-              dupped = record.dup
+              dupped = nil
+
+              begin
+                dupped = record.dup(true)
+              rescue ArgumentError
+                dupped = record.dup
+              end
+
               expect(dupped.valid?).to be false
               expect(dupped.errors[column_name]).to include("has already been taken")
               expect(dupped.save).to be false

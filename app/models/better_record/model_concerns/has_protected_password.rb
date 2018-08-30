@@ -8,6 +8,12 @@ module BetterRecord
     module HasProtectedPassword
       extend ActiveSupport::Concern
 
+      included do
+        unless self.const_defined?(:NON_DUPABLE_KEYS)
+          NON_DUPABLE_KEYS = []
+        end
+      end
+
       module ClassMethods
         def has_protected_password(
           password_field: :password,
@@ -17,6 +23,11 @@ module BetterRecord
           **opts
         )
           # == Constants ============================================================
+          self::NON_DUPABLE_KEYS |= %I[
+            #{password_field}
+            new_#{password_field}
+            new_#{password_field}_confirmation
+          ]
 
           # == Attributes ===========================================================
           attribute :"new_#{password_field}", :text

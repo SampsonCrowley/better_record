@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :task do
-    title "MyString"
+    title { "MyString" }
     developer
   end
 end
