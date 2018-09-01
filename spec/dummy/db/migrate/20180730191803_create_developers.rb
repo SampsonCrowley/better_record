@@ -7,6 +7,7 @@ class CreateDevelopers < ActiveRecord::Migration[5.2]
       t.string :middle
       t.string :last, null: false
       t.string :suffix
+      t.gender :gender, null: false
       t.date :dob, null: false
       t.text :text_array, null: false, array:true, default: []
       t.integer :int_array, null: false, array:true, default: []

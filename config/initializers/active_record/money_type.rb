@@ -2,7 +2,6 @@
 
 class MoneyType < ActiveRecord::Type::Value
   def cast(value)
-    return nil unless value
     convert_to_money(value)
   end
 

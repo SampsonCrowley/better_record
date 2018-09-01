@@ -8,9 +8,11 @@ class Developer < ApplicationRecord
   #        last:  :text, required
   #      suffix:  :text,
   #         dob:  :date, required
+  #      gender:  :enum
   #       email:  :text, required
   #  created_at:  :datetime,
   #  updated_at:  :datetime
+  # enum gender: BetterRecord::Gender::ENUM
 
   # == Extensions ===========================================================
 
@@ -23,7 +25,7 @@ class Developer < ApplicationRecord
   # == Validations ==========================================================
   validates :first, :last, presence: true, length: { minimum: 2 }
 
-  validates_presence_of :dob
+  validates_presence_of :dob, :gender
   validate :older_than_12, if: :dob_changed?
 
   validates :email, presence: true,

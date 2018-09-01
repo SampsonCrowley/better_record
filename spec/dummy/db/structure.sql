@@ -93,6 +93,16 @@ COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
+-- Name: gender; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.gender AS ENUM (
+    'F',
+    'M'
+);
+
+
+--
 -- Name: audit_table(regclass); Type: FUNCTION; Schema: auditing; Owner: -
 --
 
@@ -524,7 +534,7 @@ CREATE FUNCTION public.validate_email(email text) RETURNS text
     AS $$
       BEGIN
         IF email IS NOT NULL THEN
-          IF email !~* '\A[^@\s\;]+@[^@\s\;]+\.[^@\s\;]+\Z' THEN
+          IF email !~* '\A[^@\s;./[\]\\]+(\.[^@\s;./[\]\\]+)*@[^@\s;./[\]\\]+(\.[^@\s;./[\]\\]+)*\.[^@\s;./[\]\\]+\Z' THEN
             RAISE EXCEPTION 'Invalid E-mail format %', email
                 USING HINT = 'Please check your E-mail format.';
           END IF ;
@@ -1002,6 +1012,7 @@ CREATE TABLE public.developers (
     middle character varying,
     last character varying NOT NULL,
     suffix character varying,
+    gender public.gender NOT NULL,
     dob date NOT NULL,
     text_array text[] DEFAULT '{}'::text[] NOT NULL,
     int_array integer[] DEFAULT '{}'::integer[] NOT NULL,
@@ -1557,8 +1568,9 @@ ALTER TABLE ONLY public.tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
-('20180725160802'),
-('20180725201614'),
+('20180518042050'),
+('20180518042060'),
+('20180518042070'),
 ('20180729042090'),
 ('20180729053307'),
 ('20180729054010'),

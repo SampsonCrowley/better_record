@@ -82,5 +82,10 @@ ActiveSupport.on_load(:active_record) do
     class Migration
       include BetterRecord::Migration
     end
+    module ConnectionAdapters
+      class TableDefinition
+        include BetterRecord::Gender::TableDefinition
+      end
+    end
   end
 end

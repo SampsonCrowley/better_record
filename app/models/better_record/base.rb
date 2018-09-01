@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BetterRecord
   class Base < ActiveRecord::Base
     self.abstract_class = true
@@ -28,6 +30,9 @@ module BetterRecord
     # == Boolean Class Methods ================================================
 
     # == Class Methods ========================================================
+    def self.gender_enum(col)
+      enum col, BetterRecord::Gender::ENUM
+    end
 
     # == Boolean Methods ======================================================
 
@@ -45,5 +50,7 @@ module BetterRecord
         super()
       end
     end
+
+
   end
 end

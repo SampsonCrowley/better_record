@@ -76,6 +76,23 @@ RSpec.describe Developer, type: :model do
       end
     end
 
+    required_column(:developer, :gender) do
+      it "is coorced to a gender enum" do
+        record.gender = "Female"
+        expect(record.gender).to eq 'F'
+        record.gender = "Fe"
+        expect(record.gender).to eq 'F'
+        record.gender = "Male"
+        expect(record.gender).to eq 'M'
+        record.gender = "M"
+        expect(record.gender).to eq 'M'
+        record.gender = "Masdf"
+        expect(record.gender).to eq 'M'
+        record.gender = "asd"
+        expect(record.gender).to eq nil
+      end
+    end
+
     required_column(:developer, :dob) do
       it "has to be at least 13 years ago" do
         record.dob = 13.years.ago.to_date + 1.day
