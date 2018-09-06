@@ -83,7 +83,7 @@ class CreateBetterRecordDBFunctions < ActiveRecord::Migration[5.2]
     SQL
 
     execute <<-SQL
-      CREATE OR REPLACE FUNCTION unique_random_string(table_name text, column_name text, string_length integer)
+      CREATE OR REPLACE FUNCTION unique_random_string(table_name text, column_name text, string_length integer default 6, prefix text default '')
       RETURNS text AS
       $BODY$
         DECLARE
@@ -98,7 +98,7 @@ class CreateBetterRecordDBFunctions < ActiveRecord::Migration[5.2]
 
           LOOP
 
-            key := '';
+            key := prefix;
             iterator := 0;
 
             WHILE iterator < string_length
