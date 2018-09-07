@@ -35,4 +35,8 @@ class Object
       puts ""
     end
   end
+
+  def yes_no_to_s
+    !!self == self ? (self ? 'yes' : 'no') : to_s
+  end
 end

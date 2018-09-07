@@ -7,7 +7,7 @@ class <%= migration_class_name %> < ActiveRecord::Migration[<%= ActiveRecord::Mi
 <% elsif attribute.token? -%>
       t.string :<%= attribute.name %><%= attribute.inject_options %>
 <% else -%>
-      t.<%= attribute.type %> :<%= attribute.name %><%= attribute.type == :references ? ', null: false' : '' %><%= attribute.inject_options %>
+      t.<%= attribute.type %> :<%= attribute.name %><%= attribute.type.in?(%i[ references boolean ]) ? ', null: false' : '' %><%= attribute.type == :boolean ? ', default: false' : '' %><%= attribute.inject_options %>
 <% end -%>
 <% end -%>
 <% if options[:timestamps] %>

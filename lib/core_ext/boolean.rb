@@ -11,9 +11,3 @@ class Boolean
     !!parse(value)
   end
 end
-
-class Object
-  def yes_no_to_s
-    !!self == self ? (self ? 'yes' : 'no') : to_s
-  end
-end
