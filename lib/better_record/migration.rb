@@ -41,7 +41,11 @@ module BetterRecord
               AND (
                 (TG_OP = 'INSERT') OR ( NEW.#{password_col} IS DISTINCT FROM OLD.#{password_col} )
               ) THEN
-                NEW.#{password_col} = hash_password(NEW.#{password_col});
+                IF (NEW.#{password_col} IS DISTINCT FROM 'CLEAR_EXISTING_PASSWORD_FOR_ROW') THEN
+                  NEW.#{password_col} = hash_password(NEW.#{password_col});
+                ELSE
+                  NEW.#{password_col} = NULL;
+                END IF;
               ELSE
                 IF (TG_OP IS DISTINCT FROM 'INSERT') THEN
                   NEW.#{password_col} = OLD.#{password_col};
