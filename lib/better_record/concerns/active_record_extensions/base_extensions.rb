@@ -2,6 +2,7 @@
 
 require 'active_support/concern'
 require 'active_record/base'
+require_relative './base_extensions/attribute_methods'
 
 module BetterRecord
   module BaseExtensions

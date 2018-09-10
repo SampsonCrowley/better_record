@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    better_record (0.10.3)
+    better_record (0.10.6)
       csv (~> 3.0, >= 3.0.0)
       jwe (~> 0.3, >= 0.3.1)
       jwt (~> 2.1, >= 2.1.0)
