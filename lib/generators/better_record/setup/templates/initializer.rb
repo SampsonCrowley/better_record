@@ -17,6 +17,7 @@ module BetterRecord
   #      session_authenticate_method: BR_SESSION_AUTHENTICATE_METHOD       #
   #       certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN        #
   #  certificate_session_user_method: BR_CERTIFICATE_SESSION_USER_METHOD   #
+  #               certificate_header: BR_CERTIFICATE_HEADER                #
   ##########################################################################
 
   # uncomment the following line to disable three-state booleans in models
@@ -87,6 +88,8 @@ module BetterRecord
     # self.certificate_session_column = :cert_str
 
     # self.certificate_session_user_method = :user
+
+    # self.certificate_header = :HTTP_X_CERTIFICATE
   # end
 
 end

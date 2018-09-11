@@ -68,6 +68,7 @@ module BetterRecord
   self.session_authenticate_method = (ENV.fetch('BR_SESSION_AUTHENTICATE_METHOD') { :authenticate }).to_sym
   self.certificate_session_column = (ENV.fetch('BR_CERTIFICATE_SESSION_COLUMN') { :certificate }).to_sym
   self.certificate_session_user_method = (ENV.fetch('BR_CERTIFICATE_SESSION_USER_METHOD') { :user }).to_sym
+  self.certificate_header = (ENV.fetch('BR_CERTIFICATE_HEADER') { :HTTP_X_SSL_CERT }).to_sym
 end
 
 Dir.glob("#{File.expand_path(__dir__)}/better_record/*.rb").each do |d|

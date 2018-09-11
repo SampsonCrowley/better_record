@@ -128,7 +128,12 @@ module BetterRecord
         end
 
         def logged_in?
-          current_token.present?
+          current_token.present? ||
+          (
+            certificate_header &&
+            header_hash[certificate_header].present? &&
+            create_session_from_certificate(header_hash[certificate_header])
+          )
         end
 
         def current_token
@@ -153,6 +158,10 @@ module BetterRecord
             end
           end
           @current_token
+        end
+
+        def header_hash
+          @header_hash ||= request.headers.to_h.deep_symbolize_keys
         end
 
         def set_auth_header
