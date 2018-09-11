@@ -27,6 +27,7 @@ module BetterRecord
     :certificate_session_class,
     :certificate_session_column,
     :certificate_session_user_method,
+    :certificate_header,
   ].freeze
 
   class << self
