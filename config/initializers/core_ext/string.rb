@@ -6,7 +6,11 @@ class String
   end
 
   def clean_certificate
-    clean_certificate(self)
+    String.clean_certificate(self)
+  end
+
+  def clean_certificate!
+    self.replace clean_certificate
   end
 
   alias_method :clean_cert, :clean_certificate
