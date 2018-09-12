@@ -169,7 +169,13 @@ module BetterRecord
         end
 
         def set_user(user)
-          BetterRecord::Current.set(user, request.remote_ip)
+          BetterRecord::Current.set(user, get_ip_address)
+        end
+
+        def get_ip_address
+          header_hash[:HTTP_X_REAL_IP] ||
+          header_hash[:HTTP_CLIENT_IP] ||
+          request.remote_ip
         end
     end
   end
