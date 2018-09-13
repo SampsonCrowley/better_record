@@ -18,6 +18,16 @@ class Object
     end
   end
 
+  def self.const_belongs_to_parent?(sym)
+    (
+      self.superclass &&
+      self.superclass.const_defined?(sym) &&
+      (
+        self.superclass.const_get(sym) == self.const_get(sym)
+      )
+    )
+  end
+
   def force_print_trace(msg = "CALLED TRACER METHOD")
     begin
       raise

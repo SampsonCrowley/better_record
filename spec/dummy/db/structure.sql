@@ -23,13 +23,6 @@ COMMENT ON SCHEMA auditing IS 'Out-of-table audit/history logging tables and tri
 
 
 --
--- Name: pgpool_catalog; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA pgpool_catalog;
-
-
---
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -97,20 +90,6 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
-
-
---
--- Name: pgpool_recovery; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS pgpool_recovery WITH SCHEMA public;
-
-
---
--- Name: EXTENSION pgpool_recovery; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION pgpool_recovery IS 'recovery functions for pgpool-II for V3.4 or later';
 
 
 --
@@ -795,15 +774,6 @@ CREATE TABLE auditing.table_sizes (
 
 
 --
--- Name: insert_lock; Type: TABLE; Schema: pgpool_catalog; Owner: -
---
-
-CREATE TABLE pgpool_catalog.insert_lock (
-    reloid oid NOT NULL
-);
-
-
---
 -- Name: active_admin_comments; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1192,14 +1162,6 @@ ALTER TABLE ONLY auditing.logged_actions
 
 ALTER TABLE ONLY auditing.table_sizes
     ADD CONSTRAINT table_sizes_pkey PRIMARY KEY (oid);
-
-
---
--- Name: insert_lock insert_lock_pkey; Type: CONSTRAINT; Schema: pgpool_catalog; Owner: -
---
-
-ALTER TABLE ONLY pgpool_catalog.insert_lock
-    ADD CONSTRAINT insert_lock_pkey PRIMARY KEY (reloid);
 
 
 --

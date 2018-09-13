@@ -1,18 +1,11 @@
 # frozen_string_literal: true
 
 require 'active_support/concern'
-require 'active_support/number_helper'
 
 module BetterRecord
   module ModelConcerns
     module HasProtectedPassword
       extend ActiveSupport::Concern
-
-      included do
-        unless self.const_defined?(:NON_DUPABLE_KEYS)
-          NON_DUPABLE_KEYS = []
-        end
-      end
 
       module ClassMethods
         def has_protected_password(
@@ -22,12 +15,29 @@ module BetterRecord
           **opts
         )
           # == Constants ============================================================
-          self::NON_DUPABLE_KEYS |= %I[
+          og_dup_arr = []
+
+          if (
+            self.const_defined?(:NON_DUPABLE_KEYS) &&
+            (
+              self.const_get(:NON_DUPABLE_KEYS).is_a?(Array) ||
+              self.const_belongs_to_parent?(:NON_DUPABLE_KEYS)
+            )
+          )
+            og_dup_arr = [*self.const_get(:NON_DUPABLE_KEYS)]
+            self.__send__ :remove_const, :NON_DUPABLE_KEYS unless self.const_belongs_to_parent?(:NON_DUPABLE_KEYS)
+          end
+
+          unless self.const_defined?(:NON_DUPABLE_KEYS)
+            self.__send__ :const_set, :NON_DUPABLE_KEYS, Set[]
+          end
+
+          self::NON_DUPABLE_KEYS.merge(%I[
             #{password_field}
             new_#{password_field}
             new_#{password_field}_confirmation
             clear_#{password_field}
-          ]
+          ])
 
           # == Attributes ===========================================================
           attribute :"new_#{password_field}", :text
