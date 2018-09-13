@@ -18,8 +18,7 @@ module BetterRecord
         def has_protected_password(
           password_field: :password,
           password_validator: nil,
-          min_image_size: nil,
-          max_image_size: 500.kilobytes,
+          confirm: true,
           **opts
         )
           # == Constants ============================================================
@@ -76,15 +75,25 @@ module BetterRecord
             true
           end
 
-          define_method :"require_#{password_field}_confirmation" do
-            tmp_new_pwd = __send__ :"new_#{password_field}"
-            tmp_new_confirmation = __send__ :"new_#{password_field}_confirmation"
+          if confirm
+            define_method :"require_#{password_field}_confirmation" do
+              tmp_new_pwd = __send__ :"new_#{password_field}"
+              tmp_new_confirmation = __send__ :"new_#{password_field}_confirmation"
 
-            if tmp_new_pwd.present?
-              if tmp_new_pwd != tmp_new_confirmation
-                errors.add(:"new_#{password_field}", 'Password does not match confirmation')
-              else
-                self.password = tmp_new_pwd
+              if tmp_new_pwd.present?
+                if tmp_new_pwd != tmp_new_confirmation
+                  errors.add(:"new_#{password_field}", 'does not match confirmation')
+                else
+                  self.__send__ :"#{password_field}=", tmp_new_pwd
+                end
+              end
+            end
+          else
+            define_method :"require_#{password_field}_confirmation" do
+              tmp_new_pwd = __send__ :"new_#{password_field}"
+
+              if tmp_new_pwd.present?
+                self.__send__ :"#{password_field}=", tmp_new_pwd
               end
             end
           end

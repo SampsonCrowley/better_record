@@ -28,6 +28,7 @@ module BetterRecord
     :certificate_session_column,
     :certificate_session_user_method,
     :certificate_header,
+    :certificate_is_hashed,
   ].freeze
 
   class << self
@@ -70,6 +71,7 @@ module BetterRecord
   self.certificate_session_column = (ENV.fetch('BR_CERTIFICATE_SESSION_COLUMN') { :certificate }).to_sym
   self.certificate_session_user_method = (ENV.fetch('BR_CERTIFICATE_SESSION_USER_METHOD') { :user }).to_sym
   self.certificate_header = (ENV.fetch('BR_CERTIFICATE_HEADER') { :HTTP_X_SSL_CERT }).to_sym
+  self.certificate_is_hashed = Boolean.strict_parse(ENV.fetch('BR_CERTIFICATE_IS_HASHED') { false })
 end
 
 Dir.glob("#{File.expand_path(__dir__)}/better_record/*.rb").each do |d|

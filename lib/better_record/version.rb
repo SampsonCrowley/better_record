@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module BetterRecord
-  VERSION = '0.10.10'
+  VERSION = '0.11.4'
 end

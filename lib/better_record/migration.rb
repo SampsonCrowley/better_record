@@ -28,33 +28,36 @@ module BetterRecord
       end
     end
 
-    def login_triggers(table_name, password_col = 'password', email_col = 'email')
+    def login_triggers(table_name, password_col = 'password', email_col = 'email', function_name = nil, in_reverse = false)
       table_name = table_name.to_s
 
       reversible do |d|
-        d.up do
+        d.__send__(in_reverse ? :down : :up) do
           password_text = ''
 
           if !!password_col
-            password_text = <<-SQL
-              IF (NEW.#{password_col} IS NOT NULL)
-              AND (
-                (TG_OP = 'INSERT') OR ( NEW.#{password_col} IS DISTINCT FROM OLD.#{password_col} )
-              ) THEN
-                IF (NEW.#{password_col} IS DISTINCT FROM 'CLEAR_EXISTING_PASSWORD_FOR_ROW') THEN
-                  NEW.#{password_col} = hash_password(NEW.#{password_col});
+            create_pwd_txt = ->(col) {
+              <<-SQL
+                IF (NEW.#{col} IS NOT NULL)
+                AND (
+                  (TG_OP = 'INSERT') OR ( NEW.#{col} IS DISTINCT FROM OLD.#{col} )
+                ) THEN
+                  IF (NEW.#{col} IS DISTINCT FROM 'CLEAR_EXISTING_PASSWORD_FOR_ROW') THEN
+                    NEW.#{col} = hash_password(NEW.#{col});
+                  ELSE
+                    NEW.#{col} = NULL;
+                  END IF;
                 ELSE
-                  NEW.#{password_col} = NULL;
+                  IF (TG_OP IS DISTINCT FROM 'INSERT') THEN
+                    NEW.#{col} = OLD.#{col};
+                  ELSE
+                    NEW.#{col} = NULL;
+                  END IF;
                 END IF;
-              ELSE
-                IF (TG_OP IS DISTINCT FROM 'INSERT') THEN
-                  NEW.#{password_col} = OLD.#{password_col};
-                ELSE
-                  NEW.#{password_col} = NULL;
-                END IF;
-              END IF;
 
-            SQL
+              SQL
+            }
+            password_text = password_col.is_a?(Array) ? (password_col.map {|pwd| create_pwd_txt.call(pwd)}).join("\n") : create_pwd_txt.call(password_col)
           end
 
           email_text = ''
@@ -69,7 +72,7 @@ module BetterRecord
           end
 
           execute <<-SQL
-            CREATE OR REPLACE FUNCTION #{table_name.singularize}_changed()
+            CREATE OR REPLACE FUNCTION #{function_name.presence || table_name.singularize}_changed()
               RETURNS TRIGGER AS
             $BODY$
             BEGIN
@@ -82,24 +85,24 @@ module BetterRecord
           SQL
 
           execute <<-SQL
-            CREATE TRIGGER #{table_name}_on_insert
+            CREATE TRIGGER #{function_name.presence || table_name}_on_insert
             BEFORE INSERT ON #{table_name}
             FOR EACH ROW
-            EXECUTE PROCEDURE #{table_name.singularize}_changed();
+            EXECUTE PROCEDURE #{function_name.presence || table_name.singularize}_changed();
           SQL
 
           execute <<-SQL
-            CREATE TRIGGER #{table_name}_on_update
+            CREATE TRIGGER #{function_name.presence || table_name}_on_update
             BEFORE UPDATE ON #{table_name}
             FOR EACH ROW
-            EXECUTE PROCEDURE #{table_name.singularize}_changed();
+            EXECUTE PROCEDURE #{function_name.presence || table_name.singularize}_changed();
 
           SQL
         end
 
-        d.down do
-          execute "DROP TRIGGER IF EXISTS #{table_name}_on_insert ON #{table_name};"
-          execute "DROP TRIGGER IF EXISTS #{table_name}_on_update ON #{table_name};"
+        d.__send__(in_reverse ? :up : :down) do
+          execute "DROP TRIGGER IF EXISTS #{function_name.presence || table_name}_on_insert ON #{table_name};"
+          execute "DROP TRIGGER IF EXISTS #{function_name.presence || table_name}_on_update ON #{table_name};"
         end
       end
     end

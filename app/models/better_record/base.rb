@@ -34,9 +34,19 @@ module BetterRecord
       enum col, BetterRecord::Gender::ENUM
     end
 
+    def self.get_hashed_string(str)
+      ct = Time.now.to_i
+      cq = ActiveRecord::Base.sanitize_sql_array(["hash_password(?) as hashed_cert_#{t}", str])
+      select(cq).limit(1).first[:"hashed_cert_#{t}"]
+    end
+
     # == Boolean Methods ======================================================
 
     # == Instance Methods =====================================================
+    def get_hashed_string(str)
+      self.class.get_hashed_string(str)
+    end
+    
     def indifferent_attributes
       attributes.with_indifferent_access
     end

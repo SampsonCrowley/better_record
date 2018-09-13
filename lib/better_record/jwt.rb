@@ -105,8 +105,14 @@ module BetterRecord
         end
 
         def create_session_from_certificate(cert)
-          user = (certificate_session_class || session_class).
-          find_by(certificate_session_column => cert.clean_certificate)
+          u_class = (certificate_session_class || session_class)
+          user = u_class.where.not(certificate_session_column => nil)
+
+          if certificate_is_hashed
+            user = user.find_by("#{certificate_session_column} = crypt(?, #{certificate_session_column})", cert.clean_certificate)
+          else
+            user = user.find_by(certificate_session_column => cert.clean_certificate)
+          end
 
           if user
             if  certificate_session_user_method &&
