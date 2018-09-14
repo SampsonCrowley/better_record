@@ -20,6 +20,23 @@ module BetterRecord
         foreign_key: :row_id,
         foreign_type: :table_name,
         as: self.audit_relation_name
+
+      class << self
+        define_method BetterRecord.audit_relation_name do |*args, &block|
+          base_q = BetterRecord::LoggedAction.where(table_name: self.table_name)
+          base_q = base_q.where(*args) if args.present?
+
+          if block
+            base_q.split_batches do |b|
+              b.each do |r|
+                block.call(r)
+              end
+            end
+          else
+            base_q
+          end
+        end
+      end
     end
     # == Validations ==========================================================
 
