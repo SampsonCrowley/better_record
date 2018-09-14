@@ -103,6 +103,13 @@ CREATE TYPE public.gender AS ENUM (
 
 
 --
+-- Name: money_integer; Type: DOMAIN; Schema: public; Owner: -
+--
+
+CREATE DOMAIN public.money_integer AS integer NOT NULL DEFAULT 0;
+
+
+--
 -- Name: audit_table(regclass); Type: FUNCTION; Schema: auditing; Owner: -
 --
 
@@ -395,18 +402,22 @@ CREATE FUNCTION public.developer_changed() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
             BEGIN
-                            IF (NEW.password IS NOT NULL)
-              AND (
-                (TG_OP = 'INSERT') OR ( NEW.password IS DISTINCT FROM OLD.password )
-              ) THEN
-                NEW.password = hash_password(NEW.password);
-              ELSE
-                IF (TG_OP IS DISTINCT FROM 'INSERT') THEN
-                  NEW.password = OLD.password;
+                              IF (NEW.password IS NOT NULL)
+                AND (
+                  (TG_OP = 'INSERT') OR ( NEW.password IS DISTINCT FROM OLD.password )
+                ) THEN
+                  IF (NEW.password IS DISTINCT FROM 'CLEAR_EXISTING_PASSWORD_FOR_ROW') THEN
+                    NEW.password = hash_password(NEW.password);
+                  ELSE
+                    NEW.password = NULL;
+                  END IF;
                 ELSE
-                  NEW.password = NULL;
+                  IF (TG_OP IS DISTINCT FROM 'INSERT') THEN
+                    NEW.password = OLD.password;
+                  ELSE
+                    NEW.password = NULL;
+                  END IF;
                 END IF;
-              END IF;
 
 
                             IF (TG_OP = 'INSERT') OR ( NEW.email IS DISTINCT FROM OLD.email ) THEN
@@ -460,10 +471,10 @@ CREATE FUNCTION public.temp_table_exists(character varying) RETURNS boolean
 
 
 --
--- Name: unique_random_string(text, text, integer); Type: FUNCTION; Schema: public; Owner: -
+-- Name: unique_random_string(text, text, integer, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.unique_random_string(table_name text, column_name text, string_length integer) RETURNS text
+CREATE FUNCTION public.unique_random_string(table_name text, column_name text, string_length integer DEFAULT 6, prefix text DEFAULT ''::text) RETURNS text
     LANGUAGE plpgsql
     AS $$
         DECLARE
@@ -478,7 +489,7 @@ CREATE FUNCTION public.unique_random_string(table_name text, column_name text, s
 
           LOOP
 
-            key := '';
+            key := prefix;
             iterator := 0;
 
             WHILE iterator < string_length
@@ -1008,16 +1019,17 @@ CREATE TABLE public.developers (
     id bigint NOT NULL,
     email character varying NOT NULL,
     password text NOT NULL,
-    first character varying NOT NULL,
-    middle character varying,
-    last character varying NOT NULL,
-    suffix character varying,
+    first text NOT NULL,
+    middle text,
+    last text NOT NULL,
+    suffix text,
     gender public.gender NOT NULL,
     dob date NOT NULL,
     text_array text[] DEFAULT '{}'::text[] NOT NULL,
     int_array integer[] DEFAULT '{}'::integer[] NOT NULL,
     json_col jsonb DEFAULT '{}'::jsonb NOT NULL,
     bool_col boolean DEFAULT false NOT NULL,
+    money_col public.money_integer,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );

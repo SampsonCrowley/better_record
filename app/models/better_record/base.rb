@@ -46,7 +46,7 @@ module BetterRecord
     def get_hashed_string(str)
       self.class.get_hashed_string(str)
     end
-    
+
     def indifferent_attributes
       attributes.with_indifferent_access
     end

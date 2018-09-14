@@ -3,16 +3,17 @@ class CreateDevelopers < ActiveRecord::Migration[5.2]
     create_table :developers do |t|
       t.string :email, null: false
       t.text :password, null: false
-      t.string :first, null: false
-      t.string :middle
-      t.string :last, null: false
-      t.string :suffix
+      t.text :first, null: false
+      t.text :middle
+      t.text :last, null: false
+      t.text :suffix
       t.gender :gender, null: false
       t.date :dob, null: false
       t.text :text_array, null: false, array:true, default: []
       t.integer :int_array, null: false, array:true, default: []
       t.jsonb :json_col, null: false, default: {}
       t.boolean :bool_col, null: false, default: false
+      t.money_integer :money_col
 
       t.timestamps default: -> { 'NOW()' }
 

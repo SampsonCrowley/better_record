@@ -25,7 +25,7 @@ class Developer < ApplicationRecord
   # == Validations ==========================================================
   validates :first, :last, presence: true, length: { minimum: 2 }
 
-  validates_presence_of :dob, :gender
+  validates_presence_of :dob, :gender, :money_col
   validate :older_than_12, if: :dob_changed?
 
   validates :email, presence: true,

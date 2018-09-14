@@ -93,6 +93,23 @@ RSpec.describe Developer, type: :model do
       end
     end
 
+    optional_column(:developer, :money_col) do
+      it "is coorced to a Money Integer" do
+        [
+          [0, 0],
+          ["asdf", 0],
+          [100, 100],
+          [1.00, 100],
+          [10.00, 1000],
+          ["10.540", 1054],
+          ["$10.54", 1054],
+        ].each do |val, expected|
+          record.money_col = val
+          expect(record.money_col.value).to eq expected
+        end
+      end
+    end
+
     required_column(:developer, :dob) do
       it "has to be at least 13 years ago" do
         record.dob = 13.years.ago.to_date + 1.day

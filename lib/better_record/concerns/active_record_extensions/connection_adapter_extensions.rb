@@ -27,23 +27,36 @@ module ActiveRecord
 
         class TypeMapInitializer # :nodoc:
           private
+            def register_domain_type(row)
+              if (in_reg = check_registry(row['typname']))
+                register row['oid'], ActiveRecord::Type.registry.lookup(in_reg.send :name)
+              elsif base_type = @store.lookup(row["typbasetype"].to_i)
+                register row["oid"], base_type
+              else
+                warn "unknown base type (OID: #{row["typbasetype"]}) for domain #{row["typname"]}."
+              end
+            end
+
             def register_enum_type(row)
-              use_sym = true
               enum_val = OID::Enum.new
               enum_val.value_array = row['enumlabel'][1..-2].split(',').presence
               enum_val.value_array.map!(&:to_i) if enum_val.value_array.all? {|v| v =~ /^[0-9]+$/}
 
-              enum_val.type_override = ActiveRecord::Type.registry.__send__(:registrations).find do |type|
-                if type.matches?(row['typname'].to_sym)
-                  true
-                elsif type.matches?(row['typname'])
-                  use_sym = false
-                  true
-                end
-              end && (use_sym ? row['typname'].to_sym : row['typname'])
+              enum_val.type_override = (val = check_registry(row['typname'])) && val.__send__(:name)
 
               register row["oid"], enum_val
             end
+
+            def check_registry(name)
+              ActiveRecord::Type.registry.__send__(:registrations).find do |type|
+                if type.matches?(name.to_sym)
+                  true
+                elsif type.matches?(name)
+                  true
+                end
+              end
+            end
+
         end
       end
     end
@@ -75,7 +88,7 @@ module ActiveRecord
           end
 
           if supports_ranges?
-            query += "GROUP BY 1,2,3,4,5,6,7,8"
+            query += " GROUP BY 1,2,3,4,5,6,7,8"
           end
 
           execute_and_clear(query, "SCHEMA", []) do |records|
