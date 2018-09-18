@@ -62,7 +62,7 @@ module BetterRecord
   self.db_audit_schema = ENV.fetch('BR_DB_AUDIT_SCHEMA') { 'auditing' }
   self.has_auditing_relation_by_default = Boolean.strict_parse(ENV.fetch('BR_ADD_HAS_MANY') { true })
   self.audit_relation_name = (ENV.fetch('BR_AUDIT_RELATION_NAME') { 'logged_actions' }).to_sym
-  self.layout_template = (ENV.fetch('BR_LAYOUT_TEMPLATE') { 'better_record/layout' }).to_s
+  self.layout_template = (ENV.fetch('BR_LAYOUT_TEMPLATE') { 'better_record/application' }).to_s
   self.app_domain_name = (ENV.fetch('APP_DOMAIN_NAME') { 'non_existant_domain.com' }).to_s
   self.after_login_path = (ENV.fetch('BR_AFTER_LOGIN_PATH') { nil })
   self.use_bearer_token = Boolean.strict_parse(ENV.fetch('BR_USE_BEARER_TOKEN') { false })

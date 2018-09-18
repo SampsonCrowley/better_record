@@ -46,7 +46,7 @@ module BetterRecord
   # self.audit_relation_name = :logged_actions
 
   # uncomment the following line to change the layout template used by
-  # BetterRecord::ActionController. DEFAULT - 'better_record/layout'
+  # BetterRecord::ActionController. DEFAULT - 'better_record/application'
 
   # self.layout_template = 'layout'
 
