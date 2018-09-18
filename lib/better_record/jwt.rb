@@ -76,7 +76,7 @@ module BetterRecord
               if  !data[:created_at] ||
                   (data[:created_at].to_i > 14.days.ago.to_i)
                 if user = session_class.find_by(session_column => data[:user_id])
-                  current_token = create_jwt(user, data) if data[:created_at].to_i < 1.hour.ago.to_i
+                  self.current_token = create_jwt(user, data) if data[:created_at].to_i < 1.hour.ago.to_i
                   set_user(user)
                 else
                   throw 'User Not Found'
@@ -86,7 +86,9 @@ module BetterRecord
               end
             rescue
               p $!.message
-              current_token = nil
+              puts $!.message.backtrace.first(10)
+              
+              self.current_token = nil
               BetterRecord::Current.drop_values
             end
           end
@@ -120,7 +122,7 @@ module BetterRecord
               user = user.__send__(certificate_session_user_method)
             end
 
-            current_token = create_jwt(user, { has_certificate: true })
+            self.current_token = create_jwt(user, { has_certificate: true })
             set_user(user)
           end
         end
