@@ -98,25 +98,32 @@ module BetterRecord
 
       def transaction(*args)
         super(*args) do
-          ActiveRecord::Base.connection.execute <<-SQL
-            CREATE TEMP TABLE IF NOT EXISTS
-              "_app_user" (user_id integer, user_type text, ip_address inet);
+          if BetterRecord::Current.user
+            ActiveRecord::Base.connection.execute <<-SQL
+              CREATE TEMP TABLE IF NOT EXISTS
+                "_app_user" (user_id integer, user_type text, ip_address inet);
 
-            UPDATE
-              _app_user
-            SET
-              user_id=#{current_user_id},
-              user_type='#{current_user_type}',
-              ip_address=#{current_user_ip};
+              UPDATE
+                _app_user
+              SET
+                user_id=#{current_user_id},
+                user_type=#{current_user_type},
+                ip_address=#{current_user_ip};
 
-            INSERT INTO
-              _app_user (user_id, user_type, ip_address)
-            SELECT
-              #{current_user_id},
-              '#{current_user_type}',
-              #{current_user_ip}
-            WHERE NOT EXISTS (SELECT * FROM _app_user);
-          SQL
+              INSERT INTO
+                _app_user (user_id, user_type, ip_address)
+              SELECT
+                #{current_user_id},
+                #{current_user_type},
+                #{current_user_ip}
+              WHERE NOT EXISTS (SELECT * FROM _app_user);
+            SQL
+          else
+            ActiveRecord::Base.connection.execute <<-SQL
+              CREATE TEMP TABLE IF NOT EXISTS
+                "_app_user" (user_id integer, user_type text, ip_address inet);
+            SQL
+          end
 
           yield
         end

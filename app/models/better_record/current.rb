@@ -33,7 +33,7 @@ module BetterRecord
     end
 
     def self.user_type
-      self.user ? BetterRecord::PolymorphicOverride.polymorphic_value(self.user.class) : 'NULL'
+      self.user ? "'#{BetterRecord::PolymorphicOverride.polymorphic_value(self.user.class)}'" : 'NULL'
     end
 
     def self.user_id
