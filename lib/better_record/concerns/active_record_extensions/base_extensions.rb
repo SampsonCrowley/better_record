@@ -42,6 +42,14 @@ module BetterRecord
         BetterRecord::Current.user_type
       end
 
+      def current_user_id
+        BetterRecord::Current.user_id
+      end
+
+      def current_user_ip
+        BetterRecord::Current.user_ip
+      end
+
       def default_print
         column_names
       end
@@ -90,29 +98,25 @@ module BetterRecord
 
       def transaction(*args)
         super(*args) do
-          if BetterRecord::Current.user
-            ip = BetterRecord::Current.ip_address ? "'#{BetterRecord::Current.ip_address}'" : 'NULL'
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE TEMP TABLE IF NOT EXISTS
+              "_app_user" (user_id integer, user_type text, ip_address inet);
 
-            ActiveRecord::Base.connection.execute <<-SQL
-              CREATE TEMP TABLE IF NOT EXISTS
-                "_app_user" (user_id integer, user_type text, ip_address inet);
+            UPDATE
+              _app_user
+            SET
+              user_id=#{current_user_id},
+              user_type='#{current_user_type}',
+              ip_address=#{current_user_ip};
 
-              UPDATE
-                _app_user
-              SET
-                user_id=#{BetterRecord::Current.user.id},
-                user_type='#{current_user_type}',
-                ip_address=#{ip};
-
-              INSERT INTO
-                _app_user (user_id, user_type, ip_address)
-              SELECT
-                #{BetterRecord::Current.user.id},
-                '#{current_user_type}',
-                #{ip}
-              WHERE NOT EXISTS (SELECT * FROM _app_user);
-            SQL
-          end
+            INSERT INTO
+              _app_user (user_id, user_type, ip_address)
+            SELECT
+              #{current_user_id},
+              '#{current_user_type}',
+              #{current_user_ip}
+            WHERE NOT EXISTS (SELECT * FROM _app_user);
+          SQL
 
           yield
         end

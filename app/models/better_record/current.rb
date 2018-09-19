@@ -33,7 +33,15 @@ module BetterRecord
     end
 
     def self.user_type
-      BetterRecord::PolymorphicOverride.polymorphic_value(self.user.class) if self.user
+      self.user ? BetterRecord::PolymorphicOverride.polymorphic_value(self.user.class) : 'NULL'
+    end
+
+    def self.user_id
+      self.user ? user.id : 'NULL'
+    end
+
+    def self.user_ip
+      self.ip_address ? "'#{self.ip_address}'" : 'NULL'
     end
 
     # == Boolean Methods ======================================================
