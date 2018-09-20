@@ -4,7 +4,7 @@ class CreateBetterRecordCustomTypes < ActiveRecord::Migration[5.2]
       DO $$
         BEGIN
           IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gender') THEN
-            CREATE TYPE gender AS ENUM ('F', 'M');
+            CREATE TYPE gender AS ENUM ('F', 'M', 'U');
           END IF;
         END
       $$;

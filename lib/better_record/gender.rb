@@ -3,14 +3,18 @@
 module BetterRecord
   module Gender
     ENUM = {
-      F: 'F',
-      M: 'M',
       f: 'F',
-      m: 'M',
+      F: 'F',
       female: 'F',
       Female: 'F',
+      m: 'M',
+      M: 'M',
       male: 'M',
       Male: 'M',
+      u: 'U',
+      U: 'U',
+      unknown: 'U',
+      Unknown: 'F'
     }.freeze
 
     module TableDefinition
@@ -38,12 +42,12 @@ module BetterRecord
       private
         def convert_to_gender(value)
           case value.to_s
-          when /^[Mm]/
-            'M'
-          when /^[Ff]/
+          when /[Ff]/
             'F'
+          when /[Mm]/
+            'M'
           else
-            nil
+            'U'
           end
         end
     end
