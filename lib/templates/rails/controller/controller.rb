@@ -18,5 +18,7 @@ class <%= class_name %>Controller < ApplicationController
 <% end -%>
   # == Cleanup ============================================================
 
+  # == Utilities ==========================================================
+
 end
 <% end -%>
