@@ -86,8 +86,8 @@ module BetterRecord
               end
             rescue
               p $!.message
-              puts $!.message.backtrace.first(10)
-              
+              puts $!.backtrace.first(10)
+
               self.current_token = nil
               BetterRecord::Current.drop_values
             end
