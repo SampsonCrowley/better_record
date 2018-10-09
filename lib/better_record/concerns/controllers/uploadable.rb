@@ -8,10 +8,11 @@ module BetterRecord
       params.require(:upload).permit(:file, :staff_id)
     end
 
-    def csv_upload(job, whitelisted_params, upload_key, prefix, job_sym = :staff_id, redirecting = false)
-      p whitelisted_params
+    def csv_upload(job, whitelisted_params, upload_key, prefix, job_sym = :staff_id)
+
       uploaded = whitelisted_params[upload_key]
       job_id = whitelisted_params[job_sym]
+
       @file_stats = {
         name: uploaded.original_filename,
         "mime-type" => uploaded.content_type,
@@ -23,28 +24,28 @@ module BetterRecord
           file.write(uploaded)
           job.perform_later file.path, job_id, @file_stats[:name]
         end
-        if redirecting
-          flash[:success] ||= []
-          flash[:success] << 'File Uploaded'
-        else
-          flash.now[:success] ||= []
-          flash.now[:success] << 'File Uploaded'
-        end
-        return true
+        # begin
+        #   if redirecting
+        #     flash[:success] ||= []
+        #     flash[:success] << 'File Uploaded'
+        #   else
+        #     flash.now[:success] ||= []
+        #     flash.now[:success] << 'File Uploaded'
+        #   end
+        # rescue NoMethodError
+        #   p "Flash Messages not Enabled"
+        # end
+
+        return [200, 'File Uploaded']
       else
-        msg = [
-          'something went wrong',
-          'Only csv files with the correct headers are supported',
-          "content type: #{whitelisted_params[upload_key].content_type}", "file name: #{whitelisted_params[upload_key].original_filename}"
+        return [
+          422,
+          [
+            'something went wrong',
+            'Only csv files with the correct headers are supported',
+            "content type: #{whitelisted_params[upload_key].content_type}", "file name: #{whitelisted_params[upload_key].original_filename}"
+          ]
         ]
-
-        if redirecting
-          flash[:danger] = msg
-        else
-          flash.now[:danger] = msg
-
-          render :show
-        end
       end
     end
 
