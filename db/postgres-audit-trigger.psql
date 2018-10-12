@@ -147,7 +147,8 @@ $$
       excluded_cols = TG_ARGV[2]::text[];
     END IF;
 
-
+    CREATE TEMP TABLE IF NOT EXISTS
+      "_app_user" (user_id integer, user_type text, ip_address inet);
 
     IF (TG_OP = 'UPDATE' AND TG_LEVEL = 'ROW') THEN
       audit_row.row_data = hstore(OLD.*) - excluded_cols;
