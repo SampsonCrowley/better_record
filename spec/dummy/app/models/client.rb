@@ -7,6 +7,7 @@ class Client < ApplicationRecord
 
   # == Relationships ========================================================
   has_many :appointments, inverse_of: :client
+  has_validated_avatar shrink_large_image: {resize: '1000x1000>'}
 
   # == Validations ==========================================================
 

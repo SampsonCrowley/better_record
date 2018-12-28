@@ -250,7 +250,7 @@ COMMENT ON FUNCTION auditing.get_primary_key_column(target_table text) IS '
 
 CREATE FUNCTION auditing.if_modified_func() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO pg_catalog, public
+    SET search_path TO 'pg_catalog', 'public'
     AS $_$
   DECLARE
     audit_row auditing.logged_actions;

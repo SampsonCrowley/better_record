@@ -15,6 +15,8 @@ module BetterRecord
           image_validator: :valid_image,
           min_image_size: nil,
           max_image_size: 500.kilobytes,
+          shrink_large_image: false,
+          shrink_later: false,
           **opts
         )
           # == Constants ============================================================
@@ -58,8 +60,27 @@ module BetterRecord
 
           define_method :valid_image_size do
             if max_image_size && __send__(avatar_name).blob.byte_size > max_image_size
-              errors.add(avatar_name, "is too large, maximum #{ActiveSupport::NumberHelper.number_to_human_size(max_image_size)}")
-              return false
+              if shrink_large_image.present?
+                begin
+                  blob = __send__(avatar_name).blob
+                  @copy_later = true
+                  ResizeBlobImageJob.
+                    __send__ (shrink_later ? :perform_later : :perform_now), {
+                      model: self.class.to_s,
+                      query: {id: self.id},
+                      attachment: avatar_name,
+                      backup_action: :"cache_current_#{avatar_name}",
+                      options: shrink_large_image
+                    }
+                rescue
+                  puts $!.message
+                  puts $!.backtrace
+                  return false
+                end
+              else
+                errors.add(avatar_name, "is too large, maximum #{ActiveSupport::NumberHelper.number_to_human_size(max_image_size)}")
+                return false
+              end
             elsif min_image_size && __send__(avatar_name).blob.byte_size < min_image_size
               errors.add(avatar_name, "is too small, minimum #{ActiveSupport::NumberHelper.number_to_human_size(min_image_size)}")
               return false
@@ -71,7 +92,7 @@ module BetterRecord
             return unless __send__(avatar_name).attached?
 
             if valid_image_format && valid_image_size
-              __send__(:"cache_current_#{avatar_name}")
+              __send__(:"cache_current_#{avatar_name}") unless @copy_later
             else
               purge(__send__(avatar_name))
               __send__(:"load_last_#{avatar_name}") if __send__(:"last_#{avatar_name}").attached?
