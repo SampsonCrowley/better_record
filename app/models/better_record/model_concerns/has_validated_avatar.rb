@@ -68,8 +68,8 @@ module BetterRecord
                     __send__ (shrink_later ? :perform_later : :perform_now), {
                       model: self.class.to_s,
                       query: {id: self.id},
-                      attachment: avatar_name,
-                      backup_action: :"cache_current_#{avatar_name}",
+                      attachment: avatar_name.to_s,
+                      backup_action: "cache_current_#{avatar_name}",
                       options: shrink_large_image
                     }
                 rescue
