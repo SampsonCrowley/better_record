@@ -13,20 +13,35 @@ module BetterRecord
           tmp.rewind
           record.__send__(params[:attachment]).attach(
             io: tmp,
-            filename: blob.filename,
+            filename: blob.filename.to_s.sub(/(\.[^.]*)$/, '-resized\1'),
             content_type: blob.content_type
           )
+          tmp.close
+          puts "\n\nSAVED IMAGE\n\n"
           begin
-            blob.purge_later
+            if params[:backup_action].present?
+              record.class.find_by(params[:query]).__send__(params[:backup_action].to_sym)
+            end
+          rescue
+            puts "BACKUP ACTION FAILED"
+            puts $!.message
+            puts $!.backtrace
+          end
+          begin
+            puts "\n\n PURGING BLOB \n\n"
+            puts "blob exists? #{blob = ActiveStorage::Blob.find_by(id: blob.id).present?}"
+            blob.purge if blob.present?
+            puts "\n\n FINISHED PURGING BLOB \n\n"
           rescue
           end
-          params[:backup_action].present? && record.__send__(params[:backup_action].to_sym)
+        else
+          raise ActiveRecord::RecordNotFound
         end
-        true
+        return true
       rescue
-        p $!.to_s
-        p $!.message
-        p $!.backtrace.first(25)
+        "ERROR RESIZING IMAGE"
+        puts $!.message
+        puts $!.backtrace.first(25)
         return false
       end
     end

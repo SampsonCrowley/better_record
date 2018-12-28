@@ -16,7 +16,6 @@ module BetterRecord
           min_image_size: nil,
           max_image_size: 500.kilobytes,
           shrink_large_image: false,
-          shrink_later: false,
           **opts
         )
           # == Constants ============================================================
@@ -61,22 +60,14 @@ module BetterRecord
           define_method :valid_image_size do
             if max_image_size && __send__(avatar_name).blob.byte_size > max_image_size
               if shrink_large_image.present?
-                begin
-                  blob = __send__(avatar_name).blob
-                  @copy_later = true
-                  ResizeBlobImageJob.
-                    __send__ (shrink_later ? :perform_later : :perform_now), {
-                      model: self.class.to_s,
-                      query: {id: self.id},
-                      attachment: avatar_name.to_s,
-                      backup_action: "cache_current_#{avatar_name}",
-                      options: shrink_large_image
-                    }
-                rescue
-                  puts $!.message
-                  puts $!.backtrace
-                  return false
-                end
+                @copy_later = true
+                ResizeBlobImageJob.perform_later(
+                  model: self.class.to_s,
+                  query: {id: self.id},
+                  attachment: avatar_name.to_s,
+                  backup_action: image_validator.to_s,
+                  options: shrink_large_image
+                )
               else
                 errors.add(avatar_name, "is too large, maximum #{ActiveSupport::NumberHelper.number_to_human_size(max_image_size)}")
                 return false
@@ -89,12 +80,17 @@ module BetterRecord
           end
 
           define_method :valid_image do
-            return unless __send__(avatar_name).attached?
+            return true unless __send__(avatar_name).attached?
 
             if valid_image_format && valid_image_size
-              __send__(:"cache_current_#{avatar_name}") unless @copy_later
+              return true if @copy_later
+              puts "\n\nCOPYING AVATAR\n\n"
+              result = self.class.find_by(id: self.id).__send__(:"cache_current_#{avatar_name}")
+              puts "\n\nDONE COPYING AVATAR: #{result}\n\n"
+              result
             else
-              purge(__send__(avatar_name))
+              r = self.find_by(id: self.id).__send__(avatar_name)
+              r.purge if r.attached?
               __send__(:"load_last_#{avatar_name}") if __send__(:"last_#{avatar_name}").attached?
               false
             end
@@ -109,18 +105,23 @@ module BetterRecord
           end
 
           define_method :"copy_#{avatar_name}" do |from = avatar_name, to = :"last_#{avatar_name}"|
-            from = __send__ from
-            to = __send__ to
+            puts "COPYING #{from} TO #{to}"
+            from_attachment = __send__ from
+            to_attachment = __send__ to
 
-            purge(to) if to.attached?
+            purge(to_attachment) if to_attachment.attached?
 
             tmp = Tempfile.new
             tmp.binmode
-            tmp.write(from.download)
+            tmp.write(from_attachment.download)
             tmp.flush
             tmp.rewind
 
-            to.attach(io: tmp, filename: from.filename, content_type: from.content_type)
+            r = self.class.find_by(id: self.id)
+            from_attachment = r.__send__ from
+            to_attachment = r.__send__ to
+
+            to_attachment.attach(io: tmp, filename: from_attachment.filename, content_type: from_attachment.content_type)
             tmp.close
             true
           end
