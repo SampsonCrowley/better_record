@@ -37,4 +37,20 @@ RSpec.configure do |config|
   config.shared_context_metadata_behavior = :apply_to_host_groups
 
   config.fail_fast = true
+  config.after(:each) do
+    ActiveJob::Base.queue_adapter.enqueued_jobs = []
+    ActiveJob::Base.queue_adapter.performed_jobs = []
+  end
+
+  original_stderr = $stderr
+  original_stdout = $stdout
+  config.before(:all) do
+    # Redirect stderr and stdout
+    $stderr = File.new(File.join(File.dirname(__FILE__), 'tmp', 'log.txt'), 'w')
+    $stdout = File.new(File.join(File.dirname(__FILE__), 'tmp', 'log.txt'), 'w')
+  end
+  config.after(:all) do
+    $stderr = original_stderr
+    $stdout = original_stdout
+  end
 end

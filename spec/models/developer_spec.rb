@@ -196,8 +196,25 @@ RSpec.describe Developer, type: :model do
       let(:avatar_sample) { build(:developer).avatar }
 
       before(:each) do
-        developer.avatar.purge
+        puts "DESTROYING EXISTING AVATARS"
+        [
+          ActiveStorage::Attachment,
+          ActiveStorage::Blob
+        ].each do |ast|
+          ast.all.each do |a|
+            begin
+              a.purge
+            rescue Exception
+              begin
+                a.destroy
+              rescue Exception
+              end
+            end
+          end
+        end
         developer.reload
+        developer.avatar.purge if developer.avatar.attached?
+        developer.last_avatar.purge if developer.last_avatar.attached?
       end
 
       it "is an attachment" do
@@ -253,6 +270,8 @@ RSpec.describe Developer, type: :model do
         png_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png'))
         svg_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.svg'))
         pdf_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'pdfs', 'sample.pdf'))
+        puts "ATTACHING PDF"
+
         developer.avatar.attach(io: pdf_file, filename: 'sample.pdf')
         expect(developer.valid?).to be false
         expect(developer.errors[:avatar]).to include('is not an image file')
@@ -281,6 +300,10 @@ RSpec.describe Developer, type: :model do
       it "is < 500KB" do
         small_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png'))
         large_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'large-avatar.jpg'))
+
+
+        expect(developer.avatar.attached?).to be false
+        expect(developer.last_avatar.attached?).to be false
 
         developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
         expect(developer.valid?).to be false

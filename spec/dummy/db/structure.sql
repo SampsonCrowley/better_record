@@ -976,6 +976,39 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
+-- Name: better_record_attachment_validations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.better_record_attachment_validations (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    attachment_id bigint NOT NULL,
+    ran boolean DEFAULT false NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: better_record_attachment_validations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.better_record_attachment_validations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: better_record_attachment_validations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.better_record_attachment_validations_id_seq OWNED BY public.better_record_attachment_validations.id;
+
+
+--
 -- Name: clients; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1140,6 +1173,13 @@ ALTER TABLE ONLY public.appointments ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
+-- Name: better_record_attachment_validations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.better_record_attachment_validations ALTER COLUMN id SET DEFAULT nextval('public.better_record_attachment_validations_id_seq'::regclass);
+
+
+--
 -- Name: clients id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1222,6 +1262,14 @@ ALTER TABLE ONLY public.appointments
 
 ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: better_record_attachment_validations better_record_attachment_validations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.better_record_attachment_validations
+    ADD CONSTRAINT better_record_attachment_validations_pkey PRIMARY KEY (id);
 
 
 --
@@ -1362,6 +1410,20 @@ CREATE INDEX index_appointments_on_starting ON public.appointments USING btree (
 
 
 --
+-- Name: index_attachment_validations_uniqueness; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_attachment_validations_uniqueness ON public.better_record_attachment_validations USING btree (attachment_id, name);
+
+
+--
+-- Name: index_better_record_attachment_validations_on_attachment_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_better_record_attachment_validations_on_attachment_id ON public.better_record_attachment_validations USING btree (attachment_id);
+
+
+--
 -- Name: index_clients_on_email; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1474,6 +1536,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.appo
 
 
 --
+-- Name: better_record_attachment_validations audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.better_record_attachment_validations FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
+
+
+--
 -- Name: active_storage_attachments audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1527,6 +1596,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.clients FOR EACH STATE
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.appointments FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
+
+
+--
+-- Name: better_record_attachment_validations audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.better_record_attachment_validations FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
 
 
 --
@@ -1590,6 +1666,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180730191838'),
 ('20180730191840'),
 ('20180730191860'),
-('20180731172346');
+('20180731172346'),
+('20181228204403');
 
 
