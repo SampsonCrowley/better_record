@@ -8,7 +8,7 @@ module BetterRecord
           records = []
           count = (count.to_i == 0) ? 1 : count.to_i
           count.times do
-            test_factory = build(factory_name)
+            test_factory = build(*factory_name)
             unless test_factory.valid?
               puts test_factory.errors.full_messages
             end

@@ -167,7 +167,7 @@ module BetterRecord
 
       def set_booleans
         self.class.boolean_columns.each do |nm|
-          self.__send__("#{nm}=", __send__("#{nm}=", !!Boolean.parse(__send__ nm)))
+          __send__("#{nm}=", !!Boolean.parse(__send__ nm))
         end
         true
       end

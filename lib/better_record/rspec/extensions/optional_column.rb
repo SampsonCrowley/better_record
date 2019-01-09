@@ -5,7 +5,7 @@ module BetterRecord
     module Extensions
       def optional_column(factory_name, column_name, &blk)
         describe column_name.to_s do
-          let(:record) { build(factory_name) }
+          let(:record) { build(*factory_name) }
 
           it "is optional" do
             record.__send__"#{column_name}=", nil

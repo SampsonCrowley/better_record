@@ -51,19 +51,27 @@ module BetterRecord
     # == Boolean Class Methods ================================================
 
     # == Class Methods ========================================================
+    class << self
+      alias :super_all :all
+    end
+
     def self.find_by(*args)
       reload_data
       super *args
     end
 
     def self.all
-      reload_data if last_updated.blank? || (super.first.last_updated > 1.hour.ago)
+      reload_data if self.last_updated.blank? || (self.last_updated < 1.hour.ago)
       super
     end
 
     def self.reload_data
-      @@last_updated ||= Time.now
       connection.execute UPDATE_TABLE_SIZES_SQL
+      self.last_updated = Time.now
+    end
+
+    def self.last_updated
+      @@last_updated ||= super_all.first&.updated_at
     end
 
     # def self.default_print

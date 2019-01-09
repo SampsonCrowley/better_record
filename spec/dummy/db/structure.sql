@@ -23,20 +23,6 @@ COMMENT ON SCHEMA auditing IS 'Out-of-table audit/history logging tables and tri
 
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
---
 -- Name: btree_gin; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -780,7 +766,8 @@ CREATE TABLE auditing.table_sizes (
     total text,
     idx text,
     toast text,
-    tbl text
+    tbl text,
+    updated_at timestamp without time zone DEFAULT now()
 );
 
 
@@ -1667,6 +1654,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180730191840'),
 ('20180730191860'),
 ('20180731172346'),
-('20181228204403');
+('20181228204403'),
+('20190107202602');
 
 

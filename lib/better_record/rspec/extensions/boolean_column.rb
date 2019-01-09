@@ -3,51 +3,60 @@
 module BetterRecord
   module Rspec
     module Extensions
-      def boolean_column(factory_name, column_name, default_val = false)
+      def boolean_column(factory_name, column_name, default: false, keep_boolean_strictness: true)
+        b_state = BetterRecord.strict_booleans || false
+        
         describe column_name.to_s do
-          let(:record) { build(factory_name) }
+          let(:record) { build(*factory_name) }
 
-          it "cannot be nil in the database" do
-            stubbed = record.dup
-            allow(stubbed).to receive(:set_booleans)
-
-            stubbed.__send__"#{column_name}=", nil
-            expect(stubbed.valid?).to be false
-            expect(stubbed.errors[column_name]).to include("must be true or false")
-            expect { stubbed.save(validate: false) }.to raise_error(ActiveRecord::NotNullViolation)
-          end
-
-          it "defaults to '#{default_val}'" do
+          it "defaults to '#{default}'" do
             empty_record = record.class.new
-            expect(empty_record.__send__ column_name).to be default_val
+            expect(empty_record.__send__ column_name).to be default
           end
+          if keep_boolean_strictness
+            it "parses to a #{b_state ? 'two' : 'three'}-state boolean" do
+              [ nil, 0, 1, "true", "false", true, false ].each do |val|
+                record.__send__"#{column_name}=", val
 
-          it "will parse to boolean on save" do
-            record.__send__"#{column_name}=", nil
-            record.save
-            expect(record.__send__ column_name).to be false
+                expect(record.__send__ column_name).to eq(Boolean.__send__(b_state ? :strict_parse : :parse, val))
+              end
+            end
+          else
+            context 'loose booleans' do
+              before do
+                BetterRecord.strict_booleans = false
+              end
 
-            record.__send__"#{column_name}=", 0
-            record.save
-            expect(record.__send__ column_name).to be false
+              after do
+                BetterRecord.strict_booleans = b_state
+              end
 
-            record.__send__"#{column_name}=", 'false'
-            record.save
-            expect(record.__send__ column_name).to be false
+              it "parses to a three-state boolean" do
+                [ nil, 0, 1, "true", "false", true, false ].each do |val|
+                  record.__send__"#{column_name}=", val
 
-            record.__send__"#{column_name}=", 1
-            record.save
-            expect(record.__send__ column_name).to be true
+                  expect(record.__send__ column_name).to eq(Boolean.parse(val))
+                end
+              end
+            end
 
-            record.__send__"#{column_name}=", 'asdf'
-            record.save
-            expect(record.__send__ column_name).to be true
+            context 'strict booleans' do
+              before do
+                BetterRecord.strict_booleans = true
+              end
 
-            record.__send__"#{column_name}=", 'true'
-            record.save
-            expect(record.__send__ column_name).to be true
+              after do
+                BetterRecord.strict_booleans = b_state
+              end
 
-            record.destroy
+              it "parses to a two-state boolean" do
+                [ nil, 0, 1, "true", "false", true, false ].each do |val|
+                  record.__send__"#{column_name}=", val
+
+                  expect(record.__send__ column_name).to eq(Boolean.strict_parse(val))
+                end
+              end
+            end
           end
         end
       end

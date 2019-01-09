@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :better_record_table_size, class: 'BetterRecord::TableSize' do
+  factory :table_size, class: 'BetterRecord::TableSize' do
     oid { 1 }
     schema { "MyString" }
     name { "MyString" }

@@ -3,9 +3,9 @@
 module BetterRecord
   module Rspec
     module Extensions
-      def required_column(factory_name, column_name, unique = false, in_app_only = false, &blk)
+      def required_column(factory_name, column_name, unique: false, in_app_only: false, &blk)
         describe column_name.to_s do
-          let(:record) { build(factory_name) }
+          let(:record) { build(*factory_name) }
 
           it "is required" do
             record.__send__"#{column_name}=", nil

@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 module BetterRecord
-  RSpec.describe TableSize, type: :model do
+  RSpec.describe LoggedAction, type: :model do
     describe 'Attributes' do
       #          event_id: :integer, required
       #       schema_name: :text, required

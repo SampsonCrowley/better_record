@@ -50,7 +50,7 @@ RSpec.describe Developer, type: :model do
       end
     end
 
-    required_column(:developer, :email, true) do
+    required_column(:developer, :email, unique: true) do
       it "must be a valid format" do
         record.email = 'sample@sample'
         expect(record.valid?).to be false
@@ -148,29 +148,7 @@ RSpec.describe Developer, type: :model do
       end
     end
 
-    optional_column(:developer, :bool_col) do
-      context 'loose booleans' do
-        it "parses to a three-state boolean" do
-          BetterRecord.strict_booleans = false
-          [ nil, 0, 1, "true", "false", true, false ].each do |val|
-            record.bool_col = val
-            expect(record.bool_col).to eq(Boolean.parse(val))
-          end
-        end
-      end
-
-      context 'strict booleans' do
-        it "parses to a two-state boolean" do
-          BetterRecord.strict_booleans = true
-          [ nil, 0, 1, "true", "false", true, false ].each do |val|
-            record.bool_col = val
-            expect(record.bool_col).to eq(Boolean.strict_parse(val))
-          end
-        end
-      end
-
-
-    end
+    boolean_column(:developer, :bool_col, default: false, keep_boolean_strictness: false)
 
   end
 
