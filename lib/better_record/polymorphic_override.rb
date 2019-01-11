@@ -2,13 +2,26 @@
 
 module BetterRecord
   class PolymorphicOverride
+    @@debugging_override = nil
+
+    def self.debug=(val)
+      @@debugging_override = !!val
+    end
+
+    def self.debug
+      !!@@debugging_override
+    end
+
     def self.polymorphic_value(klass, options = nil)
       type_val = nil
       type_method = polymorphic_method(options.presence || {})
       begin
         type_val = klass.__send__(type_method)
       rescue
-        puts type_method, klass, type_val
+        puts "Error in Polymorphic Value:",
+          type_method, klass, type_val,
+          $!.message, $!.backtrace if debug
+
         if type_val == :table_name_without_schema
           type_val = klass.table_name
         else
@@ -25,7 +38,7 @@ module BetterRecord
     def self.all_types(klass)
       keys = [ :polymorphic_name, :table_name ]
       keys |= [BetterRecord.default_polymorphic_method] if BetterRecord.default_polymorphic_method.present?
-      p keys
+      p "Polymorphic methods:", keys if debug
       values = []
       keys.each do |k|
         val = nil
@@ -33,8 +46,10 @@ module BetterRecord
           val = klass.__send__(k)
           values << val if val.present?
         rescue
+          p "Error in Polymorphic Method, #{k}:", $!.message, $!.backtrace if debug
         end
       end
+      p "Present Polymorphic Values:", values if debug
       values
     end
   end
