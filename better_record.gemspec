@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", "~> 5.2", '>= 5.2.0'
   s.add_dependency "pg", "~> 1.1", '>= 1.1.2'
-  s.add_dependency 'store_as_int', '~> 0.0', '>= 0.0.15'
+  s.add_dependency 'store_as_int', '~> 0.0', '>= 0.0.17'
   s.add_dependency 'pry-rails', '~> 0.3', '>=0.3.6'
   s.add_dependency 'table_print', '~> 1.5', '>= 1.5.6'
   s.add_dependency 'jwt', '~> 2.1', '>= 2.1.0'

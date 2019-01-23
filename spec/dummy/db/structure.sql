@@ -79,6 +79,13 @@ COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
+-- Name: exchange_rate_integer; Type: DOMAIN; Schema: public; Owner: -
+--
+
+CREATE DOMAIN public.exchange_rate_integer AS bigint NOT NULL DEFAULT 0;
+
+
+--
 -- Name: gender; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -1655,6 +1662,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180730191860'),
 ('20180731172346'),
 ('20181228204403'),
-('20190107202602');
+('20190107202602'),
+('20190123225641');
 
 

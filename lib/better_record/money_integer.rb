@@ -29,13 +29,13 @@ module BetterRecord
           return StoreAsInt::Money.new(0) unless value
           if (!value.kind_of?(Numeric))
             begin
-              dollars_to_cents = (value.gsub(/\$/, '').presence || 0).to_d * 100
-              StoreAsInt.money(dollars_to_cents.to_i)
+              dollars_to_cents = (value.gsub(/\$/, '').presence || 0).to_d * StoreAsInt::Money.base
+              StoreAsInt::Money.new(dollars_to_cents.to_i)
             rescue
               StoreAsInt::Money.new
             end
           else
-            StoreAsInt.money(value)
+            StoreAsInt::Money.new(value)
           end
         end
     end

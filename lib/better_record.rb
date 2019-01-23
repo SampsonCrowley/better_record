@@ -88,6 +88,7 @@ ActiveSupport.on_load(:active_record) do
     end
     module ConnectionAdapters
       class TableDefinition
+        include BetterRecord::ExchangeRateInteger::TableDefinition
         include BetterRecord::Gender::TableDefinition
         include BetterRecord::MoneyInteger::TableDefinition
       end

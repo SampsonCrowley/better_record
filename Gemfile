@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
+ruby '2.6.0'
 # Declare your gem's dependencies in better_record.gemspec.
 # Bundler will treat runtime dependencies like base dependencies, and
 # development dependencies will be added by default to the :development group.
@@ -13,6 +14,7 @@ gemspec
 
 # To use a debugger
 # gem 'byebug', group: [:development, :test]
+gem 'irb', '~> 1.0', '>= 1.0.0'
 gem 'pry-rails', '>=0.3.6'
 gem 'table_print', '>=1.5.6'
 gem 'csv', '3.0.0'
