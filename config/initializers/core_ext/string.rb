@@ -2,7 +2,7 @@
 
 class String
   def self.clean_certificate(str)
-    CGI.unescape(str).gsub(/(\n|-----(BEGIN|END) CERTIFICATE-----)/, '').strip
+    CGI.unescape(str).gsub(/(\n|-+(BEGIN|END)\s+CERTIFICATE-+|\s+)/, '').strip
   end
 
   def clean_certificate
