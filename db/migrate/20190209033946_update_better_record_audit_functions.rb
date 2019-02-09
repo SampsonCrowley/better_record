@@ -77,24 +77,29 @@ class UpdateBetterRecordAuditFunctions < ActiveRecord::Migration[5.2]
     puts "\n\nTo insert old audits back into logged_actions run:\n\n"
 
     puts <<-RUBY
-      class BetterRecord::OldLoggedAction < BetterRecord::LoggedAction
+      class BetterRecord::OldLoggedAction < BetterRecord::Base
         self.table_name = "#{BetterRecord.db_audit_schema}.old_logged_actions"
       end
 
+      table_list = {}
+
       while BetterRecord::OldLoggedAction.count > 0
         p BetterRecord::OldLoggedAction.count
-        BetterRecord::OldLoggedAction.order(:event_id).limit(100).each do |r|
-          klass = nil
-          begin
-            BetterRecord::LoggedAction.connection.execute(%Q(SELECT 1 FROM #{BetterRecord.db_audit_schema}.logged_actions_#\{r.table_name}))
+        BetterRecord::OldLoggedAction.order(:event_id).limit(1500).each do |r|
+          unless table_list[r.table_name]
+            begin
+              BetterRecord::LoggedAction.connection.execute(%Q(SELECT 1 FROM #{BetterRecord.db_audit_schema}.logged_actions_#\{r.table_name}))
 
-            klass = Class.new(BetterRecord::LoggedAction)
-            klass.table_name = "#{BetterRecord.db_audit_schema}.logged_actions_#\{r.table_name}"
-          rescue ActiveRecord::StatementInvalid
-            klass = BetterRecord::LoggedAction
+              table_list[r.table_name] = Class.new(BetterRecord::Base)
+              table_list[r.table_name].table_name = "#{BetterRecord.db_audit_schema}.logged_actions_#\{r.table_name}"
+            rescue ActiveRecord::StatementInvalid
+              table_list[r.table_name] = BetterRecord::LoggedAction
+            end
           end
-          klass.create!(r.attributes)
-          p klass.count
+
+          BetterRecord.const_set(:NewLoggedAction, table_list[r.table_name])
+          BetterRecord::NewLoggedAction.new(r.attributes).save!(validate: false)
+          p BetterRecord::NewLoggedAction.count
           r.delete
         end
       end

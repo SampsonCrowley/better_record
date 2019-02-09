@@ -13,50 +13,7 @@ module BetterRecord
     # == Extensions ===========================================================
 
     # == Relationships ========================================================
-    if (ha = BetterRecord.has_auditing_relation_by_default)
-      class << self
-        define_method BetterRecord.audit_relation_name do |*args, &block|
-          @logger_model ||=
-            begin
-              connection.execute(%Q(SELECT 1 FROM #{BetterRecord::LoggedAction.table_name}_#{self.table_name} LIMIT 1))
 
-              class self.to_s.constantize::LoggedAction < BetterRecord::LoggedAction
-                self.table_name = "#{BetterRecord::LoggedAction.table_name}_#{self.to_s.deconstantize.constantize.table_name}"
-                self
-              end
-            rescue ActiveRecord::StatementInvalid
-              class self.to_s.constantize::LoggedAction < BetterRecord::LoggedAction
-                self
-              end
-            end
-
-          return @logger_model if args.present? && args.first == 'SETTING_INHERITANCE'
-
-          base_q = @logger_model.where(table_name: self.table_name)
-          base_q = base_q.where(*args) if args.present?
-
-          if block
-            base_q.split_batches do |b|
-              b.each do |r|
-                block.call(r)
-              end
-            end
-          else
-            base_q
-          end
-        end
-      end
-
-      def self.inherited(child)
-        super
-        TracePoint.trace(:end) do |t|
-          if child == t.self
-            child.set_audits_methods!
-            t.disable
-          end
-        end
-      end
-    end
     # == Validations ==========================================================
 
     # == Scopes ===============================================================
@@ -66,14 +23,24 @@ module BetterRecord
     # == Boolean Class Methods ================================================
 
     # == Class Methods ========================================================
-    def self.set_audits_methods!
-      m = __send__ BetterRecord.audit_relation_name, 'SETTING_INHERITANCE'
+    def self.set_audit_methods!
+      begin
+        connection.execute(%Q(SELECT 1 FROM #{BetterRecord::LoggedAction.table_name}_#{self.table_name} LIMIT 1))
+
+        self.const_set(:LoggedAction, Class.new(ApplicationRecord))
+        self.const_get(:LoggedAction).table_name = "#{BetterRecord::LoggedAction.table_name}_#{self.table_name}"
+      rescue ActiveRecord::StatementInvalid
+        self.const_set(:LoggedAction, BetterRecord::LoggedAction)
+      end
+
       self.has_many self.audit_relation_name,
-        class_name: m.to_s,
+        class_name: "#{self.to_s}::LoggedAction",
         primary_type: :table_name,
         foreign_key: :row_id,
         foreign_type: :table_name,
         as: self.audit_relation_name
+
+      self
     end
 
     def self.gender_enum(col)
@@ -107,6 +74,39 @@ module BetterRecord
       end
     end
 
+
+    if (ha = BetterRecord.has_auditing_relation_by_default)
+      has_many self.audit_relation_name,
+        class_name: 'BetterRecord::LoggedAction',
+        primary_type: :table_name,
+        foreign_key: :row_id,
+        foreign_type: :table_name,
+        as: self.audit_relation_name
+
+      class << self
+        define_method BetterRecord.audit_relation_name do |*args, &block|
+          lm =
+            begin
+              self.const_get(:LoggedAction)
+            rescue NameError
+              BetterRecord::LoggedAction
+            end
+
+          base_q = lm.where(table_name: self.table_name)
+          base_q = base_q.where(*args) if args.present?
+
+          if block
+            base_q.split_batches do |b|
+              b.each do |r|
+                block.call(r)
+              end
+            end
+          else
+            base_q
+          end
+        end
+      end
+    end
 
   end
 end

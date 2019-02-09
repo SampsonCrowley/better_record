@@ -21,7 +21,8 @@ module BetterRecord
       polymorphic: :true,
       primary_type: :table_name,
       foreign_key: :row_id,
-      foreign_type: :table_name
+      foreign_type: :table_name,
+      optional: true
 
     # == Validations ==========================================================
 
