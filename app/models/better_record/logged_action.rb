@@ -12,7 +12,7 @@ module BetterRecord
     }.with_indifferent_access
 
     # == Attributes ===========================================================
-    self.table_name = "#{BetterRecord.db_audit_schema}.logged_actions"
+    self.table_name = "#{BetterRecord.db_audit_schema}.logged_actions_view"
 
     # == Extensions ===========================================================
 
