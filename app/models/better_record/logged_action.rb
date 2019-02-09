@@ -8,6 +8,7 @@ module BetterRecord
       I: 'INSERT',
       U: 'UPDATE',
       T: 'TRUNCATE',
+      A: 'ARCHIVE',
     }.with_indifferent_access
 
     # == Attributes ===========================================================
@@ -42,6 +43,15 @@ module BetterRecord
         :changed_columns
       ]
     end
+
+    # def self.set_audits_methods!
+    #   self.has_many self.audit_relation_name,
+    #     class_name: 'BetterRecord::LoggedAction',
+    #     primary_type: :table_name,
+    #     foreign_key: :row_id,
+    #     foreign_type: :table_name,
+    #     as: self.audit_relation_name
+    # end
 
     # == Boolean Methods ======================================================
 

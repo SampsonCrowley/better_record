@@ -14,16 +14,25 @@ module BetterRecord
 
     # == Relationships ========================================================
     if (ha = BetterRecord.has_auditing_relation_by_default)
-      has_many self.audit_relation_name,
-        class_name: 'BetterRecord::LoggedAction',
-        primary_type: :table_name,
-        foreign_key: :row_id,
-        foreign_type: :table_name,
-        as: self.audit_relation_name
-
       class << self
         define_method BetterRecord.audit_relation_name do |*args, &block|
-          base_q = BetterRecord::LoggedAction.where(table_name: self.table_name)
+          @logger_model ||=
+            begin
+              connection.execute(%Q(SELECT 1 FROM #{BetterRecord::LoggedAction.table_name}_#{self.table_name} LIMIT 1))
+
+              class self.to_s.constantize::LoggedAction < BetterRecord::LoggedAction
+                self.table_name = "#{BetterRecord::LoggedAction.table_name}_#{self.to_s.deconstantize.constantize.table_name}"
+                self
+              end
+            rescue ActiveRecord::StatementInvalid
+              class self.to_s.constantize::LoggedAction < BetterRecord::LoggedAction
+                self
+              end
+            end
+
+          return @logger_model if args.present? && args.first == 'SETTING_INHERITANCE'
+
+          base_q = @logger_model.where(table_name: self.table_name)
           base_q = base_q.where(*args) if args.present?
 
           if block
@@ -37,6 +46,16 @@ module BetterRecord
           end
         end
       end
+
+      def self.inherited(child)
+        super
+        TracePoint.trace(:end) do |t|
+          if child == t.self
+            child.set_audits_methods!
+            t.disable
+          end
+        end
+      end
     end
     # == Validations ==========================================================
 
@@ -47,6 +66,16 @@ module BetterRecord
     # == Boolean Class Methods ================================================
 
     # == Class Methods ========================================================
+    def self.set_audits_methods!
+      m = __send__ BetterRecord.audit_relation_name, 'SETTING_INHERITANCE'
+      self.has_many self.audit_relation_name,
+        class_name: m.to_s,
+        primary_type: :table_name,
+        foreign_key: :row_id,
+        foreign_type: :table_name,
+        as: self.audit_relation_name
+    end
+
     def self.gender_enum(col)
       enum col, BetterRecord::Gender::ENUM
     end

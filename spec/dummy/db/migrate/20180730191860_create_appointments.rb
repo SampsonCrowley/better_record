@@ -10,6 +10,6 @@ class CreateAppointments < ActiveRecord::Migration[5.2]
       t.timestamps default: -> { 'NOW()' }
     end
 
-    audit_table :appointments
+    # audit_table :appointments
   end
 end

@@ -91,7 +91,8 @@ CREATE DOMAIN public.exchange_rate_integer AS bigint NOT NULL DEFAULT 0;
 
 CREATE TYPE public.gender AS ENUM (
     'F',
-    'M'
+    'M',
+    'U'
 );
 
 
@@ -149,6 +150,10 @@ CREATE FUNCTION auditing.audit_table(target_table regclass, audit_rows boolean, 
   BEGIN
     EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_row ON ' || quote_ident(target_table::TEXT);
     EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_stm ON ' || quote_ident(target_table::TEXT);
+
+    EXECUTE 'CREATE TABLE IF NOT EXISTS auditing.logged_actions_' || quote_ident(target_table::TEXT) || '(
+      CHECK (table_name = ' || quote_literal(target_table::TEXT) || ')
+    ) INHERITS (auditing.logged_actions)';
 
     IF audit_rows THEN
       _pk_column_name = auditing.get_primary_key_column(target_table::TEXT);
@@ -299,7 +304,8 @@ CREATE FUNCTION auditing.if_modified_func() RETURNS trigger
       excluded_cols = TG_ARGV[2]::text[];
     END IF;
 
-
+    CREATE TEMP TABLE IF NOT EXISTS
+      "_app_user" (user_id integer, user_type text, ip_address inet);
 
     IF (TG_OP = 'UPDATE' AND TG_LEVEL = 'ROW') THEN
       audit_row.row_data = hstore(OLD.*) - excluded_cols;
@@ -343,7 +349,11 @@ CREATE FUNCTION auditing.if_modified_func() RETURNS trigger
     END;
     -- end app_user data
 
-    INSERT INTO auditing.logged_actions VALUES (audit_row.*);
+    EXECUTE 'CREATE TABLE IF NOT EXISTS auditing.logged_actions_' || quote_ident(TG_TABLE_NAME::TEXT) || '(
+      CHECK (table_name = ' || quote_literal(TG_TABLE_NAME::TEXT) || ')
+    ) INHERITS (auditing.logged_actions)';
+
+    EXECUTE 'INSERT INTO auditing.logged_actions_' || quote_ident(TG_TABLE_NAME::TEXT) || ' VALUES ($1.*)' USING audit_row;
     RETURN NULL;
   END;
 $_$;
@@ -580,7 +590,7 @@ CREATE TABLE auditing.logged_actions (
     row_data public.hstore,
     changed_fields public.hstore,
     statement_only boolean NOT NULL,
-    CONSTRAINT logged_actions_action_check CHECK ((action = ANY (ARRAY['I'::text, 'D'::text, 'U'::text, 'T'::text])))
+    CONSTRAINT logged_actions_action_check1 CHECK ((action = ANY (ARRAY['I'::text, 'D'::text, 'U'::text, 'T'::text, 'A'::text])))
 );
 
 
@@ -707,7 +717,7 @@ COMMENT ON COLUMN auditing.logged_actions.client_query IS 'Top-level query that 
 -- Name: COLUMN logged_actions.action; Type: COMMENT; Schema: auditing; Owner: -
 --
 
-COMMENT ON COLUMN auditing.logged_actions.action IS 'Action type; I = insert, D = delete, U = update, T = truncate';
+COMMENT ON COLUMN auditing.logged_actions.action IS 'Action type; I = insert, D = delete, U = update, T = truncate, A = archive';
 
 
 --
@@ -739,11 +749,255 @@ COMMENT ON COLUMN auditing.logged_actions.statement_only IS '''t'' if audit even
 
 
 --
+-- Name: logged_actions_active_admin_comments; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_active_admin_comments (
+    CONSTRAINT logged_actions_active_admin_comments_table_name_check CHECK ((table_name = 'active_admin_comments'::text))
+)
+INHERITS (auditing.logged_actions);
+
+
+--
+-- Name: logged_actions_active_storage_attachments; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_active_storage_attachments (
+    CONSTRAINT logged_actions_active_storage_attachments_table_name_check CHECK ((table_name = 'active_storage_attachments'::text))
+)
+INHERITS (auditing.logged_actions);
+
+
+--
+-- Name: logged_actions_active_storage_blobs; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_active_storage_blobs (
+    CONSTRAINT logged_actions_active_storage_blobs_table_name_check CHECK ((table_name = 'active_storage_blobs'::text))
+)
+INHERITS (auditing.logged_actions);
+
+
+--
+-- Name: logged_actions_admin_users; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_admin_users (
+    CONSTRAINT logged_actions_admin_users_table_name_check CHECK ((table_name = 'admin_users'::text))
+)
+INHERITS (auditing.logged_actions);
+
+
+--
+-- Name: logged_actions_clients; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_clients (
+    CONSTRAINT logged_actions_clients_table_name_check CHECK ((table_name = 'clients'::text))
+)
+INHERITS (auditing.logged_actions);
+
+
+--
+-- Name: logged_actions_developers; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_developers (
+    CONSTRAINT logged_actions_developers_table_name_check CHECK ((table_name = 'developers'::text))
+)
+INHERITS (auditing.logged_actions);
+
+
+--
+-- Name: old_logged_actions; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.old_logged_actions (
+    event_id bigint NOT NULL,
+    schema_name text NOT NULL,
+    table_name text NOT NULL,
+    relid oid NOT NULL,
+    session_user_name text,
+    app_user_id integer,
+    app_user_type text,
+    app_ip_address inet,
+    action_tstamp_tx timestamp with time zone NOT NULL,
+    action_tstamp_stm timestamp with time zone NOT NULL,
+    action_tstamp_clk timestamp with time zone NOT NULL,
+    transaction_id bigint,
+    application_name text,
+    client_addr inet,
+    client_port integer,
+    client_query text,
+    action text NOT NULL,
+    row_id bigint,
+    row_data public.hstore,
+    changed_fields public.hstore,
+    statement_only boolean NOT NULL,
+    CONSTRAINT logged_actions_action_check CHECK ((action = ANY (ARRAY['I'::text, 'D'::text, 'U'::text, 'T'::text])))
+);
+
+
+--
+-- Name: TABLE old_logged_actions; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON TABLE auditing.old_logged_actions IS 'History of auditable actions on audited tables, from auditing.if_modified_func()';
+
+
+--
+-- Name: COLUMN old_logged_actions.event_id; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.event_id IS 'Unique identifier for each auditable event';
+
+
+--
+-- Name: COLUMN old_logged_actions.schema_name; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.schema_name IS 'Database schema audited table for this event is in';
+
+
+--
+-- Name: COLUMN old_logged_actions.table_name; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.table_name IS 'Non-schema-qualified table name of table event occured in';
+
+
+--
+-- Name: COLUMN old_logged_actions.relid; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.relid IS 'Table OID. Changes with drop/create. Get with ''tablename''::regclass';
+
+
+--
+-- Name: COLUMN old_logged_actions.session_user_name; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.session_user_name IS 'Login / session user whose statement caused the audited event';
+
+
+--
+-- Name: COLUMN old_logged_actions.app_user_id; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.app_user_id IS 'Application-provided polymorphic user id';
+
+
+--
+-- Name: COLUMN old_logged_actions.app_user_type; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.app_user_type IS 'Application-provided polymorphic user type';
+
+
+--
+-- Name: COLUMN old_logged_actions.app_ip_address; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.app_ip_address IS 'Application-provided ip address of user whose statement caused the audited event';
+
+
+--
+-- Name: COLUMN old_logged_actions.action_tstamp_tx; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.action_tstamp_tx IS 'Transaction start timestamp for tx in which audited event occurred';
+
+
+--
+-- Name: COLUMN old_logged_actions.action_tstamp_stm; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.action_tstamp_stm IS 'Statement start timestamp for tx in which audited event occurred';
+
+
+--
+-- Name: COLUMN old_logged_actions.action_tstamp_clk; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.action_tstamp_clk IS 'Wall clock time at which audited event''s trigger call occurred';
+
+
+--
+-- Name: COLUMN old_logged_actions.transaction_id; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.transaction_id IS 'Identifier of transaction that made the change. May wrap, but unique paired with action_tstamp_tx.';
+
+
+--
+-- Name: COLUMN old_logged_actions.application_name; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.application_name IS 'Application name set when this audit event occurred. Can be changed in-session by client.';
+
+
+--
+-- Name: COLUMN old_logged_actions.client_addr; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.client_addr IS 'IP address of client that issued query. Null for unix domain socket.';
+
+
+--
+-- Name: COLUMN old_logged_actions.client_port; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.client_port IS 'Remote peer IP port address of client that issued query. Undefined for unix socket.';
+
+
+--
+-- Name: COLUMN old_logged_actions.client_query; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.client_query IS 'Top-level query that caused this auditable event. May be more than one statement.';
+
+
+--
+-- Name: COLUMN old_logged_actions.action; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.action IS 'Action type; I = insert, D = delete, U = update, T = truncate';
+
+
+--
+-- Name: COLUMN old_logged_actions.row_id; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.row_id IS 'Record primary_key. Null for statement-level trigger. Prefers NEW.id if exists';
+
+
+--
+-- Name: COLUMN old_logged_actions.row_data; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.row_data IS 'Record value. Null for statement-level trigger. For INSERT this is the new tuple. For DELETE and UPDATE it is the old tuple.';
+
+
+--
+-- Name: COLUMN old_logged_actions.changed_fields; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.changed_fields IS 'New values of fields changed by UPDATE. Null except for row-level UPDATE events.';
+
+
+--
+-- Name: COLUMN old_logged_actions.statement_only; Type: COMMENT; Schema: auditing; Owner: -
+--
+
+COMMENT ON COLUMN auditing.old_logged_actions.statement_only IS '''t'' if audit event is from an FOR EACH STATEMENT trigger, ''f'' for FOR EACH ROW';
+
+
+--
 -- Name: logged_actions_event_id_seq; Type: SEQUENCE; Schema: auditing; Owner: -
 --
 
 CREATE SEQUENCE auditing.logged_actions_event_id_seq
-    START WITH 1
+    START WITH 2
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -754,7 +1008,36 @@ CREATE SEQUENCE auditing.logged_actions_event_id_seq
 -- Name: logged_actions_event_id_seq; Type: SEQUENCE OWNED BY; Schema: auditing; Owner: -
 --
 
-ALTER SEQUENCE auditing.logged_actions_event_id_seq OWNED BY auditing.logged_actions.event_id;
+ALTER SEQUENCE auditing.logged_actions_event_id_seq OWNED BY auditing.old_logged_actions.event_id;
+
+
+--
+-- Name: logged_actions_event_id_seq1; Type: SEQUENCE; Schema: auditing; Owner: -
+--
+
+CREATE SEQUENCE auditing.logged_actions_event_id_seq1
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: logged_actions_event_id_seq1; Type: SEQUENCE OWNED BY; Schema: auditing; Owner: -
+--
+
+ALTER SEQUENCE auditing.logged_actions_event_id_seq1 OWNED BY auditing.logged_actions.event_id;
+
+
+--
+-- Name: logged_actions_tasks; Type: TABLE; Schema: auditing; Owner: -
+--
+
+CREATE TABLE auditing.logged_actions_tasks (
+    CONSTRAINT logged_actions_tasks_table_name_check CHECK ((table_name = 'tasks'::text))
+)
+INHERITS (auditing.logged_actions);
 
 
 --
@@ -975,7 +1258,7 @@ CREATE TABLE public.ar_internal_metadata (
 
 CREATE TABLE public.better_record_attachment_validations (
     id bigint NOT NULL,
-    name character varying NOT NULL,
+    name text NOT NULL,
     attachment_id bigint NOT NULL,
     ran boolean DEFAULT false NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -1128,7 +1411,63 @@ ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.id;
 -- Name: logged_actions event_id; Type: DEFAULT; Schema: auditing; Owner: -
 --
 
-ALTER TABLE ONLY auditing.logged_actions ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq'::regclass);
+ALTER TABLE ONLY auditing.logged_actions ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_active_admin_comments event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_active_admin_comments ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_active_storage_attachments event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_active_storage_attachments ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_active_storage_blobs event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_active_storage_blobs ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_admin_users event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_admin_users ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_clients event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_clients ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_developers event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_developers ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: logged_actions_tasks event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.logged_actions_tasks ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq1'::regclass);
+
+
+--
+-- Name: old_logged_actions event_id; Type: DEFAULT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.old_logged_actions ALTER COLUMN event_id SET DEFAULT nextval('auditing.logged_actions_event_id_seq'::regclass);
 
 
 --
@@ -1195,11 +1534,19 @@ ALTER TABLE ONLY public.tasks ALTER COLUMN id SET DEFAULT nextval('public.tasks_
 
 
 --
--- Name: logged_actions logged_actions_pkey; Type: CONSTRAINT; Schema: auditing; Owner: -
+-- Name: old_logged_actions logged_actions_pkey; Type: CONSTRAINT; Schema: auditing; Owner: -
+--
+
+ALTER TABLE ONLY auditing.old_logged_actions
+    ADD CONSTRAINT logged_actions_pkey PRIMARY KEY (event_id);
+
+
+--
+-- Name: logged_actions logged_actions_pkey1; Type: CONSTRAINT; Schema: auditing; Owner: -
 --
 
 ALTER TABLE ONLY auditing.logged_actions
-    ADD CONSTRAINT logged_actions_pkey PRIMARY KEY (event_id);
+    ADD CONSTRAINT logged_actions_pkey1 PRIMARY KEY (event_id);
 
 
 --
@@ -1302,28 +1649,28 @@ ALTER TABLE ONLY public.tasks
 -- Name: logged_actions_action_idx; Type: INDEX; Schema: auditing; Owner: -
 --
 
-CREATE INDEX logged_actions_action_idx ON auditing.logged_actions USING btree (action);
+CREATE INDEX logged_actions_action_idx ON auditing.old_logged_actions USING btree (action);
 
 
 --
 -- Name: logged_actions_action_tstamp_tx_stm_idx; Type: INDEX; Schema: auditing; Owner: -
 --
 
-CREATE INDEX logged_actions_action_tstamp_tx_stm_idx ON auditing.logged_actions USING btree (action_tstamp_stm);
+CREATE INDEX logged_actions_action_tstamp_tx_stm_idx ON auditing.old_logged_actions USING btree (action_tstamp_stm);
 
 
 --
 -- Name: logged_actions_relid_idx; Type: INDEX; Schema: auditing; Owner: -
 --
 
-CREATE INDEX logged_actions_relid_idx ON auditing.logged_actions USING btree (relid);
+CREATE INDEX logged_actions_relid_idx ON auditing.old_logged_actions USING btree (relid);
 
 
 --
 -- Name: logged_actions_row_id_idx; Type: INDEX; Schema: auditing; Owner: -
 --
 
-CREATE INDEX logged_actions_row_id_idx ON auditing.logged_actions USING btree (row_id);
+CREATE INDEX logged_actions_row_id_idx ON auditing.old_logged_actions USING btree (row_id);
 
 
 --
@@ -1523,20 +1870,6 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.clie
 
 
 --
--- Name: appointments audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.appointments FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
-
-
---
--- Name: better_record_attachment_validations audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.better_record_attachment_validations FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func('true', 'id');
-
-
---
 -- Name: active_storage_attachments audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1583,20 +1916,6 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.tasks FOR EACH STATEME
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.clients FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
-
-
---
--- Name: appointments audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.appointments FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
-
-
---
--- Name: better_record_attachment_validations audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.better_record_attachment_validations FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('true');
 
 
 --
@@ -1663,6 +1982,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180731172346'),
 ('20181228204403'),
 ('20190107202602'),
-('20190123225641');
+('20190123225641'),
+('20190209033946');
 
 
