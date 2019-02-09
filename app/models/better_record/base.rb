@@ -25,10 +25,11 @@ module BetterRecord
     # == Class Methods ========================================================
     def self.set_audit_methods!
       begin
-        connection.execute(%Q(SELECT 1 FROM #{BetterRecord::LoggedAction.table_name.sub('_view', '')}_#{self.table_name} LIMIT 1))
+        t_name = BetterRecord::LoggedAction.table_name.sub('_view', '')
+        connection.execute(%Q(SELECT 1 FROM #{t_name}_#{self.table_name} LIMIT 1))
 
         self.const_set(:LoggedAction, Class.new(ApplicationRecord))
-        self.const_get(:LoggedAction).table_name = "#{BetterRecord::LoggedAction.table_name}_#{self.table_name}"
+        self.const_get(:LoggedAction).table_name = "#{t_name}_#{self.table_name}"
       rescue ActiveRecord::StatementInvalid
         self.const_set(:LoggedAction, BetterRecord::LoggedAction)
       end

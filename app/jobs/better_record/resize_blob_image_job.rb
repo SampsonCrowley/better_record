@@ -5,18 +5,29 @@ module BetterRecord
     def perform(**params)
       begin
         if record = params[:model].constantize.find_by(params[:query].deep_symbolize_keys)
-          blob = record.__send__(params[:attachment].to_sym).blob
+          name = params[:attachment].to_sym
+          blob = record.__send__(name).blob
           tmp = Tempfile.new
           tmp.binmode
-          tmp.write(blob.service.download(blob.variant(blob.filename.to_s =~ /-resized?/ ? {resize: '70%'} : params[:options]).processed.key))
+          tmp.write(blob.service.download(blob.variant(blob.filename.to_s =~ /-resized/ ? {resize: '70%'} : params[:options]).processed.key))
           tmp.flush
           tmp.rewind
-          record.__send__(params[:attachment]).reload.attach(
-            io: tmp,
+
+          blob.analyze if blob.filename.to_s =~ /-resized/
+
+          attachment = ActionDispatch::Http::UploadedFile.new(
+            tempfile: tmp,
             filename: blob.filename.to_s.sub(/(\.[^.]*)$/, '-resized\1').sub(/(-resized)+/, '-resized'),
-            content_type: blob.content_type
+            type: blob.content_type
           )
-          tmp.close
+
+          record.
+            __send__ :delete_attachment, name, true
+
+          record.
+            reload.__send__(params[:attachment]).
+            reload.attach(attachment)
+
           puts "\n\nSAVED IMAGE\n\n"
           begin
             if params[:backup_action].present?

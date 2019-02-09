@@ -143,19 +143,8 @@ module BetterRecord
           define_method :"copy_#{avatar_name}" do |from = avatar_name, to = :"last_#{avatar_name}"|
             puts "COPYING #{from} TO #{to}"
             from_attachment = __send__ from
-            to_attachment = __send__ to
 
-            if to_attachment.attached?
-              begin
-                atch = ActiveStorage::Attachment.find_by(to_attachment.id)
-                atch&.purge_later
-              rescue Exception
-                begin
-                  ActiveStorage::Attachment.find_by(to_attachment.id).destroy
-                rescue Exception
-                end
-              end
-            end
+            delete_attachment to
 
             if from_attachment.attached?
               tmp = Tempfile.new
@@ -168,10 +157,31 @@ module BetterRecord
               from_attachment = r.__send__ from
               to_attachment = r.__send__ to
 
-              to_attachment.attach(io: tmp, filename: from_attachment.filename, content_type: from_attachment.content_type)
+              to_attachment.attach(
+                ActionDispatch::Http::UploadedFile.new(
+                  tempfile: tmp,
+                  filename: from_attachment.filename.to_s,
+                  type: from_attachment.content_type
+                )
+              )
               tmp.close
             end
             true
+          end
+
+          define_method :delete_attachment do |att_name = avatar_name, now = false|
+            atchd = __send__ att_name
+            if atchd.attached?
+              begin
+                atch = ActiveStorage::Attachment.find_by(atchd.id)
+                atch&.__send__ now ? :purge : :purge_later
+              rescue Exception
+                begin
+                  ActiveStorage::Attachment.find_by(atchd.id).destroy
+                rescue Exception
+                end
+              end
+            end
           end
 
           define_method :reloaded_record do
