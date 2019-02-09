@@ -8,12 +8,12 @@ module BetterRecord
           blob = record.__send__(params[:attachment].to_sym).blob
           tmp = Tempfile.new
           tmp.binmode
-          tmp.write(blob.service.download(blob.variant(params[:options]).processed.key))
+          tmp.write(blob.service.download(blob.variant(blob.filename.to_s =~ /-resized?/ ? {resize: '70%'} : params[:options]).processed.key))
           tmp.flush
           tmp.rewind
-          record.__send__(params[:attachment]).attach(
+          record.__send__(params[:attachment]).reload.attach(
             io: tmp,
-            filename: blob.filename.to_s.sub(/(\.[^.]*)$/, '-resized\1'),
+            filename: blob.filename.to_s.sub(/(\.[^.]*)$/, '-resized\1').sub(/(-resized)+/, '-resized'),
             content_type: blob.content_type
           )
           tmp.close
