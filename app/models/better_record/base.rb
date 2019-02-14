@@ -30,6 +30,7 @@ module BetterRecord
 
         self.const_set(:LoggedAction, Class.new(ApplicationRecord))
         self.const_get(:LoggedAction).table_name = "#{t_name}_#{self.table_name}"
+        self.const_get(:LoggedAction).primary_key = :event_id
       rescue ActiveRecord::StatementInvalid
         self.const_set(:LoggedAction, BetterRecord::LoggedAction)
       end
@@ -41,6 +42,8 @@ module BetterRecord
         foreign_type: :table_name,
         as: self.audit_relation_name
 
+      self
+    rescue ActiveRecord::NoDatabaseError
       self
     end
 

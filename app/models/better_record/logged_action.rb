@@ -13,6 +13,7 @@ module BetterRecord
 
     # == Attributes ===========================================================
     self.table_name = "#{BetterRecord.db_audit_schema}.logged_actions_view"
+    self.primary_key = :event_id
 
     # == Extensions ===========================================================
 
