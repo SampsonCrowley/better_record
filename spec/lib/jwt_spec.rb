@@ -116,7 +116,7 @@ RSpec.describe BetterRecord::JWT do
   end
 
   describe ".encrypt_options=" do
-    it "is an setter for @encrypt_options" do
+    it "is a setter for @encrypt_options" do
       10.times do
         val = described_class::CHARACTERS.map { described_class::CHARACTERS[rand(described_class::CHARACTERS.size)] }
         described_class.encrypt_options = val
@@ -184,7 +184,7 @@ RSpec.describe BetterRecord::JWT do
 
   [
     :read,
-    :decode,
+    :decrypt,
     :deflate
   ].each do |m|
     describe ".#{m}" do

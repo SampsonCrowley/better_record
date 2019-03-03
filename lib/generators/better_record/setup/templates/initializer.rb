@@ -1,25 +1,30 @@
 # frozen_string_literal: true
 
 module BetterRecord
-  ##########################################################################
-  #   THE FOLLOWING SETTINGS CAN ALSO BE SET THROUGH ENVIRONMENT VARIABLES #
-  #                                                                        #
-  #                  strict_booleans: BR_STRICT_BOOLEANS                   #
-  #       default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD        #
-  #                  db_audit_schema: BR_DB_AUDIT_SCHEMA                   #
-  # has_auditing_relation_by_default: BR_ADD_HAS_MANY                      #
-  #              audit_relation_name: BR_AUDIT_RELATION_NAME               #
-  #                  layout_template: BR_LAYOUT_TEMPLATE                   #
-  #                  app_domain_name: APP_DOMAIN_NAME                      #
-  #                 after_login_path: BR_AFTER_LOGIN_PATH                  #
-  #                 use_bearer_token: BR_USE_BEARER_TOKEN                  #
-  #                   session_column: BR_SESSION_COLUMN                    #
-  #      session_authenticate_method: BR_SESSION_AUTHENTICATE_METHOD       #
-  #       certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN        #
-  #  certificate_session_user_method: BR_CERTIFICATE_SESSION_USER_METHOD   #
-  #               certificate_header: BR_CERTIFICATE_HEADER                #
-  #            certificate_is_hashed: BR_CERTIFICATE_IS_HASHED             #
-  ##########################################################################
+  ##############################################################################
+  #     THE FOLLOWING SETTINGS CAN ALSO BE SET THROUGH ENVIRONMENT VARIABLES   #
+  #                                                                            #
+  #                    strict_booleans: BR_STRICT_BOOLEANS                     #
+  #         default_polymorphic_method: BR_DEFAULT_POLYMORPHIC_METHOD          #
+  #                    db_audit_schema: BR_DB_AUDIT_SCHEMA                     #
+  #   has_auditing_relation_by_default: BR_ADD_HAS_MANY                        #
+  #                audit_relation_name: BR_AUDIT_RELATION_NAME                 #
+  #                    layout_template: BR_LAYOUT_TEMPLATE                     #
+  #                    app_domain_name: APP_DOMAIN_NAME                        #
+  #                   after_login_path: BR_AFTER_LOGIN_PATH                    #
+  #                   use_bearer_token: BR_USE_BEARER_TOKEN                    #
+  #                     session_column: BR_SESSION_COLUMN                      #
+  #        session_authenticate_method: BR_SESSION_AUTHENTICATE_METHOD         #
+  #         certificate_session_column: BR_CERTIFICATE_SESSION_COLUMN          #
+  #    certificate_session_user_method: BR_CERTIFICATE_SESSION_USER_METHOD     #
+  #                 certificate_header: BR_CERTIFICATE_HEADER                  #
+  #              certificate_is_hashed: BR_CERTIFICATE_IS_HASHED               #
+  #        certificate_cleaning_method: BR_CERTIFICATE_CLEANING_METHOD         #
+  #   certificate_cleaning_send_as_arg: BR_CERTIFICATE_CLEANING_AS_ARG         #
+  #                  token_send_as_arg: BR_TOKEN_AS_ARG                        #
+  #            token_encryption_method: BR_TOKEN_ENCRYPTION_METHOD             #
+  #            token_decryption_method: BR_TOKEN_DECRYPTION_METHOD             #
+  ##############################################################################
 
   # uncomment the following line to disable three-state booleans in models
 
@@ -93,6 +98,16 @@ module BetterRecord
     # self.certificate_header = :HTTP_X_CERTIFICATE
 
     # self.certificate_is_hashed = true
+
+    # self.certificate_cleaning_method = :to_s
+
+    # self.certificate_cleaning_send_as_arg = []
+
+    # self.token_send_as_arg = false
+
+    # self.token_encryption_method = :to_s
+
+    # self.token_decryption_method = :to_s
   # end
 
 end

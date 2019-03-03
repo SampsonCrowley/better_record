@@ -101,7 +101,8 @@ module BetterRecord
           data = nil
           data = session_data ? session_data.call(user) : {
             user_id: user.__send__(session_column),
-            created_at: Time.now.to_i
+            created_at: Time.now.to_i,
+            device_id: requesting_device_id
           }
           BetterRecord::JWT.encode(data.merge(additional_headers.except(*data.keys)))
         end
@@ -111,9 +112,9 @@ module BetterRecord
           user = u_class.where.not(certificate_session_column => nil)
 
           if certificate_is_hashed
-            user = user.find_by("#{certificate_session_column} = crypt(?, #{certificate_session_column})", cert.clean_certificate)
+            user = user.find_by("#{certificate_session_column} = crypt(?, #{certificate_session_column})", br_get_clean_cert(cert))
           else
-            user = user.find_by(certificate_session_column => cert.clean_certificate)
+            user = user.find_by(certificate_session_column => br_get_clean_cert(cert))
           end
 
           if user
@@ -127,6 +128,16 @@ module BetterRecord
           end
         end
 
+        def br_get_clean_cert(certificate)
+          certificate_cleaning_send_as_arg ?
+            self.__send__(certificate_cleaning_method, certificate) :
+            certificate.
+              __send__(
+                certificate_cleaning_method,
+                *(certificate_cleaning_method_args)
+              )
+        end
+
         def current_user
           BetterRecord::Current.user || check_user
         end
@@ -135,19 +146,35 @@ module BetterRecord
           logged_in? ? JWT.decode(current_token).deep_symbolize_keys : {}
         end
 
+        def has_correct_origin?
+          true
+        end
+
+        def requesting_device_id
+          session[:requesting_device_id] ||= SecureRandom.uuid
+        end
+
         def logged_in?
-          current_token.present? ||
-          (
-            certificate_header &&
-            header_hash[certificate_header].present? &&
-            create_session_from_certificate(header_hash[certificate_header])
+          current_token.present? || certificate_session_exists?
+        end
+
+        def certificate_string
+          @certificate_string ||= certificate_header &&
+            header_hash[certificate_header].presence
+        end
+
+        def certificate_session_exists?
+          !!(
+            certificate_string &&
+            has_correct_origin? &&
+            create_session_from_certificate(certificate_string)
           )
         end
 
         def current_token
           if use_bearer_token
             @current_token ||= authenticate_with_http_token do |token, **options|
-              token
+              decrypt_token(token)
             end
           else
             @current_token ||= session[:current_user]
@@ -173,8 +200,21 @@ module BetterRecord
         end
 
         def set_auth_header
-          response.set_header("AUTH_TOKEN", current_token)
+          response.set_header("AUTH_TOKEN", encrypt_token) if current_token.present?
         end
+
+        def decrypt_token(t, options)
+          token_send_as_arg ?
+            __send__(token_decryption_method, t, options) :
+            t.__send__(token_decryption_method)
+        end
+
+        def encrypt_token
+          token_send_as_arg ?
+            __send__(token_encryption_method, current_token) :
+            current_token.__send__(token_encryption_method)
+        end
+
 
         def set_user(user)
           BetterRecord::Current.set(user, get_ip_address)

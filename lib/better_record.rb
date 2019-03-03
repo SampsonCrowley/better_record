@@ -29,6 +29,11 @@ module BetterRecord
     :certificate_session_user_method,
     :certificate_header,
     :certificate_is_hashed,
+    :certificate_cleaning_method,
+    :certificate_cleaning_send_as_arg,
+    :token_encryption_method,
+    :token_decryption_method,
+    :token_send_as_arg,
   ].freeze
 
   class << self
@@ -72,6 +77,11 @@ module BetterRecord
   self.certificate_session_user_method = (ENV.fetch('BR_CERTIFICATE_SESSION_USER_METHOD') { :user }).to_sym
   self.certificate_header = (ENV.fetch('BR_CERTIFICATE_HEADER') { :HTTP_X_SSL_CERT }).to_sym
   self.certificate_is_hashed = Boolean.strict_parse(ENV.fetch('BR_CERTIFICATE_IS_HASHED') { false })
+  self.certificate_cleaning_method = (ENV.fetch('BR_CERTIFICATE_CLEANING_METHOD') { :clean_certificate }).to_sym
+  self.certificate_cleaning_send_as_arg = Boolean.strict_parse(ENV.fetch('BR_CERTIFICATE_CLEANING_AS_ARG') { false })
+  self.token_decryption_method = (ENV.fetch('BR_TOKEN_DECRYPTION_METHOD') { :to_s }).to_sym
+  self.token_encryption_method = (ENV.fetch('BR_TOKEN_ENCRYPTION_METHOD') { :to_s }).to_sym
+  self.token_send_as_arg = Boolean.strict_parse(ENV.fetch('BR_TOKEN_AS_ARG') { false })
 end
 
 Dir.glob("#{File.expand_path(__dir__)}/better_record/*.rb").each do |d|
