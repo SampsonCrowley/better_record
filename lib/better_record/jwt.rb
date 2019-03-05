@@ -129,13 +129,15 @@ module BetterRecord
         end
 
         def br_get_clean_cert(certificate)
-          certificate_cleaning_send_as_arg ?
-            self.__send__(certificate_cleaning_method, certificate) :
-            certificate.
-              __send__(
-                certificate_cleaning_method,
-                *(certificate_cleaning_method_args)
-              )
+          ensure_is_real_value(
+            certificate_cleaning_send_as_arg ?
+              self.__send__(certificate_cleaning_method, certificate) :
+              (
+                certificate_cleaning_method.present? ?
+                  certificate.__send__(certificate_cleaning_method) :
+                  certificate
+              ).presence
+          )
         end
 
         def current_user
@@ -144,6 +146,8 @@ module BetterRecord
 
         def current_user_session_data
           logged_in? ? JWT.decode(current_token).deep_symbolize_keys : {}
+        rescue
+          {}
         end
 
         def has_correct_origin?
@@ -174,7 +178,7 @@ module BetterRecord
         def current_token
           if use_bearer_token
             @current_token ||= authenticate_with_http_token do |token, **options|
-              decrypt_token(token)
+              decrypt_token(token, options).presence
             end
           else
             @current_token ||= session[:current_user]
@@ -203,16 +207,28 @@ module BetterRecord
           response.set_header("AUTH_TOKEN", encrypt_token) if current_token.present?
         end
 
-        def decrypt_token(t, options)
-          token_send_as_arg ?
-            __send__(token_decryption_method, t, options) :
-            t.__send__(token_decryption_method)
+        def decrypt_token(t, **options)
+          ensure_is_real_value(
+            token_send_as_arg ?
+              __send__(token_decryption_method, t, options) :
+              (
+                token_decryption_method.present? ?
+                  t.__send__(token_decryption_method) :
+                  t
+              ).presence
+          )
         end
 
         def encrypt_token
-          token_send_as_arg ?
-            __send__(token_encryption_method, current_token) :
-            current_token.__send__(token_encryption_method)
+          ensure_is_real_value(
+            token_send_as_arg ?
+              __send__(token_encryption_method, current_token) :
+              (
+                token_encryption_method.present? ?
+                  current_token.__send__(token_encryption_method) :
+                  current_token
+              ).presence
+          )
         end
 
 
@@ -224,6 +240,12 @@ module BetterRecord
           header_hash[:HTTP_X_REAL_IP] ||
           header_hash[:HTTP_CLIENT_IP] ||
           request.remote_ip
+        end
+
+        def ensure_is_real_value(value)
+          (Boolean.parse(value) && (value != "nil")) ?
+            value :
+            nil
         end
     end
   end

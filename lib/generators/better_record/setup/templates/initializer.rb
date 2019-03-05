@@ -99,7 +99,7 @@ module BetterRecord
 
     # self.certificate_is_hashed = true
 
-    # self.certificate_cleaning_method = :to_s
+    # self.certificate_cleaning_method = :clean_certificate
 
     # self.certificate_cleaning_send_as_arg = []
 

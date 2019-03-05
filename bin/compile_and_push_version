@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ -f ./better_record.gemspec ]; then
+  gem build better_record.gemspec
+  gem push better_record-*.gem
+  mv better_record-*.gem versions/
+  tar czf versions.tar.gz versions/
+fi

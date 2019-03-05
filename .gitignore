@@ -30,6 +30,7 @@
 /**/dummy/storage/*
 !/public/.keep
 !/storage/.keep
+/versions/
 
 .byebug_history
 
