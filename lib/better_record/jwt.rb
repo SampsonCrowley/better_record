@@ -73,16 +73,20 @@ module BetterRecord
           if logged_in?
             begin
               data = current_user_session_data
-              if  !data[:created_at] ||
-                  (data[:created_at].to_i > 14.days.ago.to_i)
-                if user = session_class.find_by(session_column => data[:user_id])
-                  self.current_token = create_jwt(user, data) if data[:created_at].to_i < 1.hour.ago.to_i
-                  set_user(user)
+              if data[:device_id] == requesting_device_id
+                if  !data[:created_at] ||
+                    (data[:created_at].to_i > 14.days.ago.to_i)
+                  if user = session_class.find_by(session_column => data[:user_id])
+                    self.current_token = create_jwt(user, data) if data[:created_at].to_i < 1.hour.ago.to_i
+                    set_user(user)
+                  else
+                    throw 'User Not Found'
+                  end
                 else
-                  throw 'User Not Found'
+                  throw 'Token Expired'
                 end
               else
-                throw 'Token Expired'
+                throw 'Device Does Not Match'
               end
             rescue
               p $!.message

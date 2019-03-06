@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 if [ -f ./better_record.gemspec ]; then
+  tar -C ./ -zxvf versions.tar.gz
   gem build better_record.gemspec
   gem push better_record-*.gem
   mv better_record-*.gem versions/
