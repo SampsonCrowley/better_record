@@ -80,13 +80,13 @@ module BetterRecord
                     self.current_token = create_jwt(user, data) if data[:created_at].to_i < 1.hour.ago.to_i
                     set_user(user)
                   else
-                    throw 'User Not Found'
+                    raise 'User Not Found'
                   end
                 else
-                  throw 'Token Expired'
+                  raise 'Token Expired'
                 end
               else
-                throw 'Device Does Not Match'
+                raise "Device Does Not Match - #{data[:device_id]} || #{requesting_device_id}"
               end
             rescue
               p $!.message
@@ -159,7 +159,7 @@ module BetterRecord
         end
 
         def requesting_device_id
-          session[:requesting_device_id] ||= SecureRandom.uuid
+          @requesting_device_id = (session[:requesting_device_id] ||= SecureRandom.uuid)
         end
 
         def logged_in?
