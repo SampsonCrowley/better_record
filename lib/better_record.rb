@@ -24,6 +24,7 @@ module BetterRecord
     :session_column,
     :session_data,
     :session_authenticate_method,
+    :disallow_sessions,
     :certificate_session_class,
     :certificate_session_column,
     :certificate_session_user_method,
@@ -79,6 +80,7 @@ module BetterRecord
   self.certificate_is_hashed = Boolean.strict_parse(ENV.fetch('BR_CERTIFICATE_IS_HASHED') { false })
   self.certificate_cleaning_method = (ENV.fetch('BR_CERTIFICATE_CLEANING_METHOD') { :clean_certificate })&.to_sym
   self.certificate_cleaning_send_as_arg = Boolean.strict_parse(ENV.fetch('BR_CERTIFICATE_CLEANING_AS_ARG') { false })
+  self.disallow_sessions = Boolean.strict_parse(ENV.fetch('BR_DISALLOW_SESSIONS') { false })
   self.token_decryption_method = (ENV.fetch('BR_TOKEN_DECRYPTION_METHOD') { '' }).presence&.to_sym
   self.token_encryption_method = (ENV.fetch('BR_TOKEN_ENCRYPTION_METHOD') { '' }).presence&.to_sym
   self.token_send_as_arg = Boolean.strict_parse(ENV.fetch('BR_TOKEN_AS_ARG') { false })

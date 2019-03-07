@@ -108,6 +108,8 @@ module BetterRecord
     # self.token_encryption_method = :to_s
 
     # self.token_decryption_method = :to_s
+
+    # self.disallow_sessions = false
   # end
 
 end

@@ -73,7 +73,7 @@ module BetterRecord
           if logged_in?
             begin
               data = current_user_session_data
-              if data[:device_id] == requesting_device_id
+              if (data[:token_device_id] == requesting_device_id) || session[:current_user]
                 if  !data[:created_at] ||
                     (data[:created_at].to_i > 14.days.ago.to_i)
                   if user = session_class.find_by(session_column => data[:user_id])
@@ -106,7 +106,7 @@ module BetterRecord
           data = session_data ? session_data.call(user) : {
             user_id: user.__send__(session_column),
             created_at: Time.now.to_i,
-            device_id: requesting_device_id
+            token_device_id: requesting_device_id
           }
           BetterRecord::JWT.encode(data.merge(additional_headers.except(*data.keys)))
         end
@@ -184,22 +184,26 @@ module BetterRecord
             @current_token ||= authenticate_with_http_token do |token, **options|
               decrypt_token(token, options).presence
             end
-          else
-            @current_token ||= session[:current_user]
           end
+
+          @current_token ||= session[:current_user] unless BetterRecord.disallow_sessions
         end
 
         def current_token=(value)
           @current_token = value
+
           if use_bearer_token
             set_auth_header
-          else
+          end
+
+          unless BetterRecord.disallow_sessions
             if value.blank?
               session.delete(:current_user)
             else
               session[:current_user] = value
             end
           end
+
           @current_token
         end
 
