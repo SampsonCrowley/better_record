@@ -173,11 +173,11 @@ module BetterRecord
             atchd = __send__ att_name
             if atchd.attached?
               begin
-                atch = ActiveStorage::Attachment.find_by(atchd.id)
+                atch = ActiveStorage::Attachment.find_by(id: atchd.id)
                 atch&.__send__ now ? :purge : :purge_later
               rescue Exception
                 begin
-                  ActiveStorage::Attachment.find_by(atchd.id).destroy
+                  ActiveStorage::Attachment.find_by(id: atchd.id).destroy
                 rescue Exception
                 end
               end

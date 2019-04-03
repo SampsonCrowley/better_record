@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   # s.test_files = Dir["spec/**/*"]
 
-  s.add_dependency "rails", "~> 5.2", '>= 5.2.0'
+  s.add_dependency "rails", "~> 5", '>= 5.2.2.1'
   s.add_dependency "pg", "~> 1.1", '>= 1.1.2'
   s.add_dependency 'store_as_int', '~> 0.0', '>= 0.0.17'
   s.add_dependency 'pry-rails', '~> 0.3', '>=0.3.6'

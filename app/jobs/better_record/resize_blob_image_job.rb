@@ -21,12 +21,19 @@ module BetterRecord
             type: blob.content_type
           )
 
-          record.
-            __send__ :delete_attachment, name, true
+          begin
+            record.
+              __send__ :delete_attachment, name, true
 
-          record.
-            reload.__send__(params[:attachment]).
-            reload.attach(attachment)
+            record.
+              reload.
+              __send__(name).
+              attach(attachment)
+          rescue
+            puts "Attachment No Longer Exists"
+            puts $!.message
+            puts $!.backtrace
+          end
 
           puts "\n\nSAVED IMAGE\n\n"
           begin
