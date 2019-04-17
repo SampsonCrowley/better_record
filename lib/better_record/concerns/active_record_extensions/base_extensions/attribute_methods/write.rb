@@ -15,13 +15,15 @@ module BetterRecord
         end
 
         def normalize_attribute_value(attr_name, value)
-          case type_for_attribute(attr_name)
+          case t = type_for_attribute(attr_name)
           when ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Array
             [value].flatten.select(&:present?)
           when ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Jsonb
             value.presence || {}
           when ActiveRecord::Type::Boolean
             BetterRecord.strict_booleans ? Boolean.strict_parse(value) : Boolean.parse(value)
+          when BetterRecord::CustomType
+            t.class.normalize_type_value(value)
           else
             value.presence
           end

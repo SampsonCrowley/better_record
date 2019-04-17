@@ -187,10 +187,8 @@ module BetterRecord
           define_method :reloaded_record do
             self.class.find_by(id: self.id)
           end
-
         end
       end
-
     end
   end
 end

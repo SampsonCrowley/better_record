@@ -76,7 +76,7 @@ RSpec.describe Developer, type: :model do
       end
     end
 
-    required_column(:developer, :gender) do
+    optional_column(:developer, :gender) do
       it "is coorced to a gender enum" do
         record.gender = "Female"
         expect(record.gender).to eq 'F'
@@ -88,8 +88,12 @@ RSpec.describe Developer, type: :model do
         expect(record.gender).to eq 'M'
         record.gender = "Masdf"
         expect(record.gender).to eq 'M'
-        record.gender = "asd"
-        expect(record.gender).to eq nil
+        record.gender = "am"
+        expect(record.gender).to eq 'U'
+        record.gender = "asdf"
+        expect(record.gender).to eq 'U'
+        record.gender = nil
+        expect(record.gender).to eq 'U'
       end
     end
 
@@ -144,6 +148,22 @@ RSpec.describe Developer, type: :model do
         ].each do |val|
           record.text_array = val
           expect(record.text_array).to eq([val].flatten.select(&:present?).map(&:to_s))
+        end
+      end
+    end
+
+    optional_column(:developer, :three_state_col) do
+      it "is coorced to a three-state bool" do
+        [
+          [ "Y", "Yes", "Yasdf", "T", "t", "True", "true", true ],
+          [ "N", "No", "Nasdf", "F", "f", "False", "false", false ],
+          [ "U", "asdf", "UNo", "TYes", "aFalse", "afalse", "asdftrue", "afalse", "trait", "fantasy", nil, ]
+        ].each do |arr|
+          r = arr.first
+          arr.each do |v|
+            record.three_state_col = v
+            expect(record.three_state_col).to eq r
+          end
         end
       end
     end
@@ -299,6 +319,8 @@ RSpec.describe Developer, type: :model do
       end
 
       it "will not overwrite an existing avatar with an invalid one" do
+
+
         small_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png'))
         large_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'large-avatar.jpg'))
 
@@ -308,13 +330,16 @@ RSpec.describe Developer, type: :model do
         expect(developer.avatar.attached?).to be true
         expect(developer.last_avatar.attached?).to be true
 
-        developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
+        expect(developer).to receive(:load_last_avatar).at_least(:once)
+
+        expect {
+          developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
+        }.to change {
+          ActiveJob::Base.queue_adapter.enqueued_jobs.count
+        }
+
         expect(developer.valid?).to be false
         expect(developer.errors[:avatar]).to include('is too large, maximum 500 KB')
-
-        developer.reload
-        expect(developer.avatar.attached?).to be true
-        expect(developer.last_avatar.attached?).to be true
       end
     end
   end

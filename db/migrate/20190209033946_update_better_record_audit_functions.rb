@@ -1,11 +1,14 @@
 class UpdateBetterRecordAuditFunctions < ActiveRecord::Migration[5.2]
   def up
-    last_event = BetterRecord::LoggedAction.count
-
     execute <<-SQL
       ALTER TABLE #{BetterRecord.db_audit_schema}.logged_actions
       RENAME TO old_logged_actions
     SQL
+
+    ola = Class.new(BetterRecord::LoggedAction)
+    ola.table_name = "#{BetterRecord.db_audit_schema}.old_logged_actions"
+
+    last_event = ola.count + 1
 
     sql = ""
     source = File.new(BetterRecord::Engine.root.join('db', 'postgres-audit-v2-table.psql'), "r")

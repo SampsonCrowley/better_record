@@ -1,3 +1,4 @@
+# encoding: utf-8
 # frozen_string_literal: true
 
 module BetterRecord
@@ -14,8 +15,19 @@ module BetterRecord
       u: 'U',
       U: 'U',
       unknown: 'U',
-      Unknown: 'F'
+      Unknown: 'U'
     }.freeze
+
+    def self.convert_to_gender(value)
+      case value.to_s
+      when /^[Ff]/
+        'F'
+      when /^[Mm]/
+        'M'
+      else
+        'U'
+      end
+    end
 
     module TableDefinition
       def gender(*args, **opts)
@@ -25,31 +37,10 @@ module BetterRecord
       end
     end
 
-    class Type < ActiveRecord::Type::Value
-
-      def cast(value)
-        convert_to_gender(value)
+    class Type < BetterRecord::CustomType
+      def self.normalize_type_value(value)
+        BetterRecord::Gender.convert_to_gender(value)
       end
-
-      def deserialize(value)
-        super(convert_to_gender(value))
-      end
-
-      def serialize(value)
-        super(convert_to_gender(value))
-      end
-
-      private
-        def convert_to_gender(value)
-          case value.to_s
-          when /[Ff]/
-            'F'
-          when /[Mm]/
-            'M'
-          else
-            'U'
-          end
-        end
     end
   end
 end

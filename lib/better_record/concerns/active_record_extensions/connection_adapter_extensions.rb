@@ -29,7 +29,7 @@ module ActiveRecord
           private
             def register_domain_type(row)
               if (in_reg = check_registry(row['typname']))
-                register row['oid'], ActiveRecord::Type.registry.lookup(in_reg.send :name)
+                register row['oid'], in_reg
               elsif base_type = @store.lookup(row["typbasetype"].to_i)
                 register row["oid"], base_type
               else
@@ -38,23 +38,24 @@ module ActiveRecord
             end
 
             def register_enum_type(row)
-              enum_val = OID::Enum.new
-              enum_val.value_array = row['enumlabel'][1..-2].split(',').presence
-              enum_val.value_array.map!(&:to_i) if enum_val.value_array.all? {|v| v =~ /^[0-9]+$/}
 
-              enum_val.type_override = (val = check_registry(row['typname'])) && val.__send__(:name)
+              if (reg_val = check_registry(row['typname'])).is_a?(BetterRecord::CustomType)
+                register row['oid'], reg_val
+              else
+                enum_val = OID::Enum.new
+                enum_val.value_array = row['enumlabel'][1..-2].split(',').presence
+                enum_val.value_array.map!(&:to_i) if enum_val.value_array.all? {|v| v =~ /^[0-9]+$/}
 
-              register row["oid"], enum_val
+                enum_val.type_override = (reg_val && row['typname'].to_sym).presence
+
+                register row["oid"], enum_val
+              end
             end
 
             def check_registry(name)
-              ActiveRecord::Type.registry.__send__(:registrations).find do |type|
-                if type.matches?(name.to_sym)
-                  true
-                elsif type.matches?(name)
-                  true
-                end
-              end
+              ActiveRecord::Type.registry.lookup(name.to_sym)
+            rescue
+              nil
             end
 
         end

@@ -13,6 +13,7 @@ class CreateDevelopers < ActiveRecord::Migration[5.2]
       t.integer :int_array, null: false, array:true, default: []
       t.jsonb :json_col, null: false, default: {}
       t.boolean :bool_col, null: false, default: false
+      t.three_state :three_state_col, null: false, default: 'U'
       t.money_integer :money_col
 
       t.timestamps default: -> { 'NOW()' }

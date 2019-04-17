@@ -86,8 +86,10 @@ module BetterRecord
   self.token_send_as_arg = Boolean.strict_parse(ENV.fetch('BR_TOKEN_AS_ARG') { false })
 end
 
+require "#{File.expand_path(__dir__)}/better_record/custom_type.rb"
+
 Dir.glob("#{File.expand_path(__dir__)}/better_record/*.rb").each do |d|
-  require d unless (d =~ /fake/)
+  require d unless (d =~ /fake|custom_type/)
 end
 
 ActiveSupport.on_load(:active_record) do
@@ -103,6 +105,7 @@ ActiveSupport.on_load(:active_record) do
         include BetterRecord::ExchangeRateInteger::TableDefinition
         include BetterRecord::Gender::TableDefinition
         include BetterRecord::MoneyInteger::TableDefinition
+        include BetterRecord::ThreeState::TableDefinition
       end
     end
   end
