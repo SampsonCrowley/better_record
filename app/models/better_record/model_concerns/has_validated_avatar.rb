@@ -58,10 +58,14 @@ module BetterRecord
           end
 
           define_method :"create_#{avatar_name}_validation" do |ran=false|
+            BetterRecord::AttachmentValidation.delete_invalid
             begin
-              AttachmentValidation.create!(name: image_validator, attachment_id: __send__(avatar_name).id, ran: ran)
+              opts = { name: image_validator, attachment_id: reloaded_record&.__send__(avatar_name)&.attachment&.id, ran: ran }
+              AttachmentValidation.create!(opts) if opts[:attachment_id]
             rescue
-              __send__(:"#{avatar_name}_validation_record").update(ran: true) if $!.is_a?(PG::UniqueViolation) && ran && !__send__(:"#{avatar_name}_validation_record").ran
+              if ran && $!.is_a?(PG::UniqueViolation) && !__send__(:"#{avatar_name}_validation_record").ran
+                __send__(:"#{avatar_name}_validation_record").update(ran: true)
+              end
             end
             __send__(:"#{avatar_name}_validation_record")
           end
@@ -88,7 +92,7 @@ module BetterRecord
                 puts "\nSHRINKING\n"
                 self.__send__ :"shrinking_#{avatar_name}=", true
                 (
-                  shrink_wait_time ?
+                  shrink_wait_time  ?
                   ResizeBlobImageJob.set(wait: shrink_wait_time) :
                   ResizeBlobImageJob
                 ).perform_later(
@@ -112,75 +116,62 @@ module BetterRecord
           define_method :valid_image do
             return true unless __send__(avatar_name).attached?
             __send__(:"create_#{avatar_name}_validation", true)
+            raise "Uh Oh" unless __send__(:"#{avatar_name}_validation_ran?", true)
 
             if valid_image_format && valid_image_size
               self.__send__(:"shrinking_#{avatar_name}") ||
-              reloaded_record.__send__(:"cache_current_#{avatar_name}")
+              __send__(:"cache_current_#{avatar_name}")
+              true
             else
-              r = reloaded_record.__send__(avatar_name)
-              begin
-                r.purge_later if r.attached?
-              rescue Exception
-              end
-              __send__(:"load_last_#{avatar_name}") if __send__(:"last_#{avatar_name}").attached?
+              __send__(:"load_last_#{avatar_name}")
               false
             end
           end
 
           define_method :"check_#{image_validator}" do |*args|
-            return true unless __send__(avatar_name).attached?
+            return true  if self.id.blank? || !reloaded_record&.__send__(avatar_name).attached?
             __send__(image_validator) unless __send__(:"#{avatar_name}_validation_ran?", true)
           end
 
           define_method :"cache_current_#{avatar_name}" do
-            reloaded_record.__send__ :"copy_#{avatar_name}"
+            __send__ :"copy_#{avatar_name}"
           end
 
           define_method :"load_last_#{avatar_name}" do
-            reloaded_record.__send__ :"copy_#{avatar_name}", :"last_#{avatar_name}", avatar_name
+            __send__ :"copy_#{avatar_name}", :"last_#{avatar_name}", avatar_name
+            __send__(:"create_#{avatar_name}_validation", true)
           end
 
           define_method :"copy_#{avatar_name}" do |from = avatar_name, to = :"last_#{avatar_name}"|
             puts "COPYING #{from} TO #{to}"
-            from_attachment = __send__ from
+            # begin
+            # rescue
+            #   puts $!.message
+            #   puts $!.backtrace
+            # end
 
-            delete_attachment to
+            from_attachment = __send__ from
+            to_attachment   = __send__ to
+
 
             if from_attachment.attached?
-              tmp = Tempfile.new
-              tmp.binmode
-              tmp.write(from_attachment.download)
-              tmp.flush
-              tmp.rewind
-
-              r = reloaded_record
-              from_attachment = r.__send__ from
-              to_attachment = r.__send__ to
-
-              to_attachment.attach(
-                ActionDispatch::Http::UploadedFile.new(
-                  tempfile: tmp,
-                  filename: from_attachment.filename.to_s,
-                  type: from_attachment.content_type
-                )
-              )
-              tmp.close
+              return true if from_attachment.attachment&.blob_id == to_attachment.attachment&.blob_id
+              delete_attachment to
+              to_attachment.attach from_attachment.blob
+            else
+              delete_attachment to
             end
-            true
           end
 
           define_method :delete_attachment do |att_name = avatar_name, now = false|
-            atchd = __send__ att_name
-            if atchd.attached?
-              begin
-                atch = ActiveStorage::Attachment.find_by(id: atchd.id)
-                atch&.__send__ now ? :purge : :purge_later
-              rescue Exception
-                begin
-                  ActiveStorage::Attachment.find_by(id: atchd.id).destroy
-                rescue Exception
-                end
+            begin
+              atchd = __send__ att_name
+              if atchd.attachment
+                atchd_blob = atchd.blob
+                atchd.detach
+                atchd_blob&.__send__ now ? :purge : :purge_later
               end
+            rescue Exception
             end
           end
 

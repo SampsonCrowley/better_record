@@ -194,7 +194,6 @@ RSpec.describe Developer, type: :model do
       let(:avatar_sample) { build(:developer).avatar }
 
       before(:each) do
-        puts "DESTROYING EXISTING AVATARS"
         [
           ActiveStorage::Attachment,
           ActiveStorage::Blob
@@ -210,9 +209,11 @@ RSpec.describe Developer, type: :model do
             end
           end
         end
+        BetterRecord::AttachmentValidation.delete_invalid
+        developer.delete_attachment :avatar
+        developer.delete_attachment :last_avatar
+        developer.errors.clear
         developer.reload
-        developer.avatar.purge if developer.avatar.attached?
-        developer.last_avatar.purge if developer.last_avatar.attached?
       end
 
       it "is an attachment" do
@@ -268,78 +269,74 @@ RSpec.describe Developer, type: :model do
         png_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png'))
         svg_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.svg'))
         pdf_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'pdfs', 'sample.pdf'))
-        puts "ATTACHING PDF"
 
-        developer.avatar.attach(io: pdf_file, filename: 'sample.pdf')
-        expect(developer.valid?).to be false
+        clear_dev_errors = -> do
+          developer.delete_attachment :avatar
+          developer.delete_attachment :last_avatar
+
+          developer.reload
+          developer.errors.clear
+          expect(developer.avatar.attached?).to be false
+          expect(developer.last_avatar.attached?).to be false
+        end
+
+        clear_dev_errors.call
+
+        developer.reload.avatar.attach(io: pdf_file, filename: 'sample.pdf')
         expect(developer.errors[:avatar]).to include('is not an image file')
-
-        developer.reload
         expect(developer.avatar.attached?).to be false
+        expect(developer.last_avatar.attached?).to be false
+
+        clear_dev_errors.call
 
         developer.avatar.attach(io: png_image_file, filename: 'avatar.png', content_type: 'image/png')
-        expect(developer.valid?).to be true
         expect(developer.errors[:avatar]).to be_empty
+        expect(developer.reload.avatar.attached?).to be true
+        expect(developer.last_avatar.attached?).to be true
 
-        developer.reload
-        expect(developer.avatar.attached?).to be true
-
-        developer.avatar.purge
-        developer.reload
+        clear_dev_errors.call
 
         developer.avatar.attach(io: svg_image_file, filename: 'avatar.svg', content_type: 'image/svg+xml')
-        expect(developer.valid?).to be true
         expect(developer.errors[:avatar]).to be_empty
-
-        developer.reload
-        expect(developer.avatar.attached?).to be true
+        expect(developer.reload.avatar.attached?).to be true
+        expect(developer.last_avatar.attached?).to be true
       end
 
       it "is < 500KB" do
         small_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png'))
         large_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'large-avatar.jpg'))
 
-
         expect(developer.avatar.attached?).to be false
         expect(developer.last_avatar.attached?).to be false
 
         developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
-        expect(developer.valid?).to be false
         expect(developer.errors[:avatar]).to include('is too large, maximum 500 KB')
+        expect(developer.reload.avatar.attached?).to be false
+        expect(developer.last_avatar.attached?).to be false
 
-        developer.reload
-        expect(developer.avatar.attached?).to be false
+        developer.errors.clear
 
         developer.avatar.attach(io: small_image_file, filename: 'small.png', content_type: 'image/png')
-        expect(developer.valid?).to be true
         expect(developer.errors[:avatar]).to be_empty
-
-        developer.reload
-        expect(developer.avatar.attached?).to be true
+        expect(developer.reload.avatar.attached?).to be true
       end
 
       it "will not overwrite an existing avatar with an invalid one" do
-
-
         small_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png'))
         large_image_file = File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'large-avatar.jpg'))
 
-        developer.attach_avatar(io: small_image_file, filename: 'small.png', content_type: 'image/png')
-
-        developer.reload
-        expect(developer.avatar.attached?).to be true
+        developer.avatar.attach(io: small_image_file, filename: 'small.png', content_type: 'image/png')
+        expect(developer.errors[:avatar]).to be_empty
+        expect(developer.reload.avatar.attached?).to be true
         expect(developer.last_avatar.attached?).to be true
 
-        expect(developer).to receive(:load_last_avatar).at_least(:once)
+        original_blob = developer.avatar.blob
+        expect(developer.last_avatar.blob.id).to eq original_blob.id
 
-        expect {
-          developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
-        }.to change {
-          ActiveJob::Base.queue_adapter.enqueued_jobs.count
-        }
-
-        expect(developer.valid?).to be false
+        developer.avatar.attach(io: large_image_file, filename: 'large.jpg', content_type: 'image/jpeg')
         expect(developer.errors[:avatar]).to include('is too large, maximum 500 KB')
+        expect(developer.reload.avatar.blob).to eq original_blob
+        expect(developer.last_avatar.blob).to eq original_blob
       end
     end
   end

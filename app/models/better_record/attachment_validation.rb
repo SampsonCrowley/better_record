@@ -28,9 +28,11 @@ module BetterRecord
     # == Boolean Class Methods ================================================
 
     # == Class Methods ========================================================
-    # def self.boolean_columns
-    #   @@boolean_columns ||= %i[ ran ].freeze
-    # end
+    def self.delete_invalid
+      BetterRecord::AttachmentValidation.
+        where.not( id: BetterRecord::AttachmentValidation.joins(:attachment).select(:id) ).
+        delete_all
+    end
 
     # == Boolean Methods ======================================================
 
