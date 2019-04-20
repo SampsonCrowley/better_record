@@ -2,7 +2,7 @@
 
 module BetterRecord
   module Migration
-    def audit_table(table_name, rows = nil, query_text = nil, skip_columns = nil)
+    def audit_table(table_name, rows = nil, query_text = nil, skip_columns = %w[ updated_at ])
       reversible do |d|
         d.up do
           if(rows && rows.is_a?(Array))
@@ -11,7 +11,12 @@ module BetterRecord
             query_text = true
           end
 
-          if(rows.nil?)
+          if rows.nil? && skip_columns.is_a?(Array)
+            rows = true
+            query_text = query_text.nil? ? true : query_text
+          end
+
+          if(rows.nil? )
             execute "SELECT #{BetterRecord.db_audit_schema}.audit_table('#{table_name}');"
           else
             rows = !!rows ? 't' : 'f'
