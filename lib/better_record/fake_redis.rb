@@ -80,6 +80,16 @@ module BetterRecord
       val
     end
 
+    def keys(pattern = ".*")
+      data.keys.filter {|k| k.to_s =~ /^#{pattern}$/}
+    end
+
+    def del(*keys)
+      i = 0
+      keys.map {|k| data.delete(k) && (i += 1) }
+      i
+    end
+
     def method_missing
       return nil
     end
