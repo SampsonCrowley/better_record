@@ -339,5 +339,67 @@ RSpec.describe Developer, type: :model do
         expect(developer.last_avatar.blob).to eq original_blob
       end
     end
+
+    describe "multi_images" do
+      let(:developer) { create(:developer) }
+
+      it "is an attachment" do
+        expect(build(:developer).multi_images_attachments).to be_a_kind_of(ActiveRecord::Associations::CollectionProxy)
+      end
+
+      it "is plural" do
+        expect(build(:developer).multi_images).to be_a_kind_of(ActiveStorage::Attached::Many)
+      end
+
+      describe 'attachments' do
+        let(:t) { described_class.reflect_on_association(:multi_images_attachments) }
+        it "has many" do
+          expect(t.macro).to eq(:has_many)
+        end
+
+        it 'is polymorphic' do
+          expect(t.options[:as]).to_not be_empty
+          expect(t.options[:inverse_of]).to eq(t.options[:as])
+          expect(t.foreign_key.to_s).to eq("#{t.options[:as]}_id")
+          expect(t.type.to_s).to eq("#{t.options[:as]}_type")
+        end
+
+        [ :polymorphic_name, :table_name, :table_name_without_schema, :table_name_with_schema ].each do |default_method|
+          describe "when default polymorphic method = :#{default_method}" do
+            let(:attachment) do
+              developer.multi_images.purge
+              BetterRecord.default_polymorphic_method = default_method
+
+              developer.
+                multi_images.
+                attach(
+                  io: File.open(BetterRecord::Engine.root.join('spec', 'factories', 'images', 'avatar.png')),
+                  filename: 'avatar.png'
+                ).first
+            end
+
+            let(:association_type) { attachment.__send__("#{t.options[:as]}_type") }
+
+            current_method = default_method.to_s.sub('_without_schema', '').to_sym
+
+            it "uses #{default_method} as foreign_type" do
+              expect(association_type).to eq(described_class.__send__ default_method)
+              expect(association_type).to_not eq(described_class.__send__ current_method) unless described_class.__send__(current_method) == described_class.__send__(default_method)
+            end
+          end
+        end
+      end
+
+      describe 'blobs' do
+        let(:t) { described_class.reflect_on_association(:multi_images_blobs) }
+
+        it "has many through attachment" do
+          expect(t.macro).to eq(:has_many)
+          expect(t.options[:through]).to eq(:multi_images_attachments)
+          expect(t.options[:source]).to eq(:blob)
+          expect(t.foreign_key.to_sym).to eq(:blob_id)
+        end
+      end
+    end
   end
 end

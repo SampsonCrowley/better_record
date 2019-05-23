@@ -1,13 +1,13 @@
 PATH
   remote: .
   specs:
-    better_record (0.21.2)
+    better_record (0.22.4)
       csv (~> 3.0, >= 3.0.0)
       jwe (~> 0.3, >= 0.3.1)
       jwt (~> 2.1, >= 2.1.0)
       pg (~> 1.1, >= 1.1.2)
       pry-rails (~> 0.3, >= 0.3.6)
-      rails (~> 5, >= 5.2.2.1)
+      rails (~> 5, >= 5.2.3)
       store_as_int (~> 0.0, >= 0.0.17)
       table_print (~> 1.5, >= 1.5.6)
 
@@ -68,12 +68,12 @@ GEM
     factory_bot_rails (4.11.1)
       factory_bot (~> 4.11.1)
       railties (>= 3.0.0)
-    ffi (1.10.0)
+    ffi (1.11.1)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
-    image_processing (1.8.0)
+    image_processing (1.9.0)
       mini_magick (>= 4.9.3, < 5)
       ruby-vips (>= 2.0.13, < 3)
     irb (1.0.0)
@@ -93,7 +93,7 @@ GEM
     mini_portile2 (2.4.0)
     minitest (5.11.3)
     nio4r (2.3.1)
-    nokogiri (1.10.2)
+    nokogiri (1.10.3)
       mini_portile2 (~> 2.4.0)
     pg (1.1.4)
     pry (0.12.2)
@@ -131,7 +131,7 @@ GEM
     rake (12.3.2)
     rspec-core (3.8.0)
       rspec-support (~> 3.8.0)
-    rspec-expectations (3.8.2)
+    rspec-expectations (3.8.3)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.8.0)
     rspec-mocks (3.8.0)
@@ -179,7 +179,7 @@ DEPENDENCIES
   table_print (>= 1.5.6)
 
 RUBY VERSION
-   ruby 2.6.2p47
+   ruby 2.6.3p62
 
 BUNDLED WITH
    2.0.1

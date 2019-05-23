@@ -42,6 +42,12 @@ module BetterRecord
       attrs_hash.dup
     end
 
+    def model_index_by_table_name(reset = false)
+      @index_by_table_name = nil if reset
+      
+      @index_by_table_name ||= ActiveRecord::Base.descendants.reject(&:abstract_class).index_by(&:table_name)
+    end
+
     attr_accessor *ATTRIBUTE_METHODS
 
     # ATTRIBUTE_METHODS.each do |method|

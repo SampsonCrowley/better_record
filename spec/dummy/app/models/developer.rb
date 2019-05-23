@@ -21,6 +21,7 @@ class Developer < ApplicationRecord
   has_protected_password
 
   has_many :tasks, inverse_of: :developer
+  has_many_attached :multi_images
 
   # == Validations ==========================================================
   validates :first, :last, presence: true, length: { minimum: 2 }
