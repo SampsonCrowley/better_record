@@ -26,5 +26,13 @@ module BetterRecord
         find_in_batches(options.except(:preserve_order), &block)
       end
     end
+
+    def split_batches_values(**options)
+      split_batches options do |b|
+        b.each do |v|
+          yield v
+        end
+      end
+    end
   end
 end
