@@ -47,6 +47,10 @@ class Object
   end
 
   def yes_no_to_s
-    !!self == self ? (self ? 'yes' : 'no') : to_s
+    !!self == self ? BetterRecord::ThreeState.titleize(self) : to_s
+  end
+
+  def y_n_to_s
+    !!self == self ? BetterRecord::ThreeState.convert_to_three_state(self) : to_s
   end
 end
