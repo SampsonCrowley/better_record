@@ -13,5 +13,20 @@ class String
     self.replace clean_certificate
   end
 
+  def cleanup
+    dup.gsub!(/\s*(\r?\n\s*|\s+)/, ' ')
+  end
+
+  def cleanup!
+    gsub!(/\s*(\r?\n\s*|\s+)/, ' ')
+    self
+  end
+
+  def cleanup_production
+    Rails.env.production? \
+      ? cleanup
+      : self
+  end
+
   alias_method :clean_cert, :clean_certificate
 end

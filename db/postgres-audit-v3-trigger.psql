@@ -94,7 +94,7 @@ $$
       audit_row.client_query = NULL;
     END IF;
 
-    IF ((TG_ARGV[1] IS NOT NULL) AND (TG_LEVEL = 'ROW')) THEN
+    IF ((TG_LEVEL = 'ROW') AND (TG_ARGV[1] IS NOT NULL) AND (TG_ARGV[1]::TEXT <> 'NULL') AND (TG_ARGV[1]::TEXT <> 'null') AND (TG_ARGV[1]::TEXT <> '')) THEN
       pk_val_query = 'SELECT $1.' || quote_ident(TG_ARGV[1]::text);
 
       IF (TG_OP IS DISTINCT FROM 'DELETE') THEN
@@ -216,7 +216,6 @@ $$
                       'LIMIT 1';
 
     EXECUTE _pk_query_text INTO _pk_column_name;
-    raise notice 'Value %', _pk_column_name;
     return _pk_column_name;
   END;
 $$

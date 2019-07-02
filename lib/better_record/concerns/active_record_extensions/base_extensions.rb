@@ -99,7 +99,7 @@ module BetterRecord
       def transaction(*args)
         super(*args) do
           if BetterRecord::Current.user
-            ActiveRecord::Base.connection.execute <<-SQL
+            ActiveRecord::Base.connection.execute <<-SQL.cleanup_production
               CREATE TEMP TABLE IF NOT EXISTS
                 "_app_user" (user_id integer, user_type text, ip_address inet);
 
@@ -119,7 +119,7 @@ module BetterRecord
               WHERE NOT EXISTS (SELECT * FROM _app_user);
             SQL
           else
-            ActiveRecord::Base.connection.execute <<-SQL
+            ActiveRecord::Base.connection.execute <<-SQL.cleanup_production
               CREATE TEMP TABLE IF NOT EXISTS
                 "_app_user" (user_id integer, user_type text, ip_address inet);
             SQL
