@@ -37,7 +37,14 @@ module BetterRecord
 
       self.has_many self.audit_relation_name,
         class_name: "#{self.to_s}::LoggedAction",
-        primary_type: :table_name,
+        primary_type: :full_table_name,
+        foreign_key: :row_id,
+        foreign_type: :full_name,
+        as: self.audit_relation_name
+
+      self.has_many :"#{self.audit_relation_name}_full_table",
+        class_name: "#{self.to_s}::LoggedAction",
+        primary_type: :table_name_only,
         foreign_key: :row_id,
         foreign_type: :table_name,
         as: self.audit_relation_name
