@@ -26,10 +26,10 @@ module BetterRecord
     def self.set_audit_methods!
       begin
         t_name = BetterRecord::LoggedAction.table_name.sub('_view', '')
-        connection.execute(%Q(SELECT 1 FROM #{t_name}_#{self.table_name} LIMIT 1))
+        connection.execute(%Q(SELECT 1 FROM #{t_name}_#{self.table_name_only} LIMIT 1))
 
         self.const_set(:LoggedAction, Class.new(ApplicationRecord))
-        self.const_get(:LoggedAction).table_name = "#{t_name}_#{self.table_name}"
+        self.const_get(:LoggedAction).table_name = "#{t_name}_#{self.table_name_only}"
         self.const_get(:LoggedAction).primary_key = :event_id
       rescue ActiveRecord::StatementInvalid
         self.const_set(:LoggedAction, BetterRecord::LoggedAction)
@@ -158,7 +158,29 @@ module BetterRecord
               BetterRecord::LoggedAction
             end
 
-          base_q = lm.where(table_name: self.table_name)
+          base_q = lm.where(full_name: self.full_table_name)
+          base_q = base_q.where(*args) if args.present?
+
+          if block
+            base_q.split_batches do |b|
+              b.each do |r|
+                block.call(r)
+              end
+            end
+          else
+            base_q
+          end
+        end
+
+        define_method :"#{BetterRecord.audit_relation_name}_full_table" do |*args, &block|
+          lm =
+            begin
+              self.const_get(:LoggedAction)
+            rescue NameError
+              BetterRecord::LoggedAction
+            end
+
+          base_q = lm.where(table_name: self.table_name_only)
           base_q = base_q.where(*args) if args.present?
 
           if block
