@@ -57,6 +57,54 @@ module BetterRecord
       select(cq).limit(1).first[:"hashed_cert_#{t}"]
     end
 
+    def self.schema_qualified
+      return @schema_qualified if @schema_qualified.present?
+      if table_name =~ /.+\..+/
+        tmp_name = table_name.split('.')
+        @schema_qualified = {
+          schema_name: tmp_name[0],
+          table_name: tmp_name[1]
+        }
+      else
+        paths = (connection.execute("show search_path").first || {})['search_path']
+        paths = (paths.presence || "public").to_s.split(",")
+        paths.each do |schema_path|
+          row = (
+            connection.execute <<-SQL.cleanup_production
+              SELECT c.oid,
+                n.nspname,
+                c.relname
+              FROM pg_catalog.pg_class c
+                LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+              WHERE c.relname = '#{table_name}'
+                AND n.nspname = '#{schema_path.strip}'
+              ORDER BY 2, 3;
+            SQL
+          ).first
+
+          if row.present?
+            @schema_name = {
+              schema_name: row['nspname'],
+              table_name: row['relname']
+            }
+            break
+          end
+        end
+        return @schema_name || {
+          schema_name: "public",
+          table_name: table_name
+        }
+      end
+    end
+
+    def self.full_table_name
+      "#{schema_qualified[:schema_name]}.#{schema_qualified[:table_name]}"
+    end
+
+    def self.table_name_only
+      schema_qualified[:table_name]
+    end
+
     # == Boolean Methods ======================================================
 
     # == Instance Methods =====================================================
@@ -82,7 +130,14 @@ module BetterRecord
     if (ha = BetterRecord.has_auditing_relation_by_default)
       has_many self.audit_relation_name,
         class_name: 'BetterRecord::LoggedAction',
-        primary_type: :table_name,
+        primary_type: :full_table_name,
+        foreign_key: :row_id,
+        foreign_type: :full_name,
+        as: self.audit_relation_name
+
+      has_many :"#{self.audit_relation_name}_full_table",
+        class_name: 'BetterRecord::LoggedAction',
+        primary_type: :table_name_only,
         foreign_key: :row_id,
         foreign_type: :table_name,
         as: self.audit_relation_name

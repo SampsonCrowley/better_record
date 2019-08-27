@@ -23,7 +23,7 @@ module BetterRecord
           $!.message, $!.backtrace if debug
 
         if type_val == :table_name_without_schema
-          type_val = klass.table_name
+          type_val = klass.table_name.to_s.split('.').first
         else
           type_val = klass.polymorphic_name
         end
@@ -36,7 +36,7 @@ module BetterRecord
     end
 
     def self.all_types(klass)
-      keys = [ :polymorphic_name, :table_name ]
+      keys = [ :polymorphic_name, :full_table_name, :table_name_only, :table_name ]
       keys |= [BetterRecord.default_polymorphic_method] if BetterRecord.default_polymorphic_method.present?
       p "Polymorphic methods:", keys if debug
       values = []

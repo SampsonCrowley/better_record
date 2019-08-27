@@ -27,8 +27,8 @@ module BetterRecord
         end
 
         d.down do
-          execute "DROP TRIGGER audit_trigger_row ON #{table_name};"
-          execute "DROP TRIGGER audit_trigger_stm ON #{table_name};"
+          execute "DROP TRIGGER IF EXISTS audit_trigger_row ON #{table_name};"
+          execute "DROP TRIGGER IF EXISTS audit_trigger_stm ON #{table_name};"
         end
       end
     end

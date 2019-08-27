@@ -6,7 +6,8 @@ class AuditTriggerV3 < ActiveRecord::Migration[5.2]
       SELECT pg_inherits.*, c.relname AS child, p.relname AS parent
       FROM
       pg_inherits JOIN pg_class AS c ON (inhrelid=c.oid)
-      JOIN pg_class as p ON (inhparent=p.oid);
+      JOIN pg_class as p ON (inhparent=p.oid)
+      WHERE p.relnamespace::regnamespace::text = '#{BetterRecord.db_audit_schema}';
     SQL
 
     children.each do |child|
@@ -91,7 +92,7 @@ class AuditTriggerV3 < ActiveRecord::Migration[5.2]
 
     rows.each do |r|
       if r['tgname'].to_s =~ /audit_trigger/
-        puts "\n\nPLEASE RECREATE ALL AUDIT TRIGGERS FOR #{r['table_name']}\n\n#{r}\n\n"
+        puts "\n\nPLEASE RECREATE ALL AUDIT TRIGGERS FOR #{r['schema_name']}.#{r['table_name']}\n\n#{r}\n\n"
       end
     end
 

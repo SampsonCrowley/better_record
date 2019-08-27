@@ -38,7 +38,7 @@ module BetterRecord
       [
         :event_id,
         :row_id,
-        :table_name,
+        :full_name,
         :app_user_id,
         :app_user_type,
         :action_type,
