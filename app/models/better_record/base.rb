@@ -64,6 +64,21 @@ module BetterRecord
       select(cq).limit(1).first[:"hashed_cert_#{t}"]
     end
 
+    def self.reset_all_schemas
+      ActiveRecord::Base.descendants.each do |desc|
+        desc.reset_qualified_schema rescue nil
+      end
+      true
+    end
+
+    def self.reset_qualified_schema
+      @schema_qualified = nil
+    end
+
+    def self.saved_qualified_schema
+      @schema_qualified
+    end
+
     def self.schema_qualified
       return @schema_qualified if @schema_qualified.present?
       if table_name =~ /.+\..+/
@@ -90,14 +105,14 @@ module BetterRecord
           ).first
 
           if row.present?
-            @schema_name = {
+            @schema_qualified = {
               schema_name: row['nspname'],
               table_name: row['relname']
             }
             break
           end
         end
-        return @schema_name || {
+        return @schema_qualified ||= {
           schema_name: "public",
           table_name: table_name
         }
