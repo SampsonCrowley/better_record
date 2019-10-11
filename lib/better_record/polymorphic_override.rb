@@ -50,7 +50,7 @@ module BetterRecord
         end
       end
       p "Present Polymorphic Values:", values if debug
-      values
+      values.uniq
     end
   end
 end
