@@ -14,7 +14,4 @@ gemspec
 # To use a debugger
 # gem 'byebug', group: [:development, :test]
 gem 'irb', '~> 1.0', '>= 1.0.0'
-gem 'pry-rails', '>=0.3.6'
-gem 'table_print', '>=1.5.6'
-gem 'csv', '3.0.0'
 gem 'image_processing', '~> 1.2'

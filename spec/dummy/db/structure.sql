@@ -661,7 +661,7 @@ CREATE FUNCTION public.validate_email(email text) RETURNS text
 
 SET default_tablespace = '';
 
-SET default_with_oids = false;
+SET default_table_access_method = heap;
 
 --
 -- Name: logged_actions; Type: TABLE; Schema: auditing; Owner: -
@@ -1932,49 +1932,49 @@ CREATE INDEX index_tasks_on_due_date ON public.tasks USING btree (due_date);
 -- Name: logged_actions_view logged_actions_partition_by_table; Type: TRIGGER; Schema: auditing; Owner: -
 --
 
-CREATE TRIGGER logged_actions_partition_by_table INSTEAD OF INSERT ON auditing.logged_actions_view FOR EACH ROW EXECUTE PROCEDURE auditing.logged_actions_partition();
-
-
---
--- Name: old_logged_actions logged_actions_skip_direct; Type: TRIGGER; Schema: auditing; Owner: -
---
-
-CREATE TRIGGER logged_actions_skip_direct BEFORE INSERT ON auditing.old_logged_actions FOR EACH STATEMENT EXECUTE PROCEDURE auditing.skip_logged_actions_main();
+CREATE TRIGGER logged_actions_partition_by_table INSTEAD OF INSERT ON auditing.logged_actions_view FOR EACH ROW EXECUTE FUNCTION auditing.logged_actions_partition();
 
 
 --
 -- Name: logged_actions logged_actions_skip_direct; Type: TRIGGER; Schema: auditing; Owner: -
 --
 
-CREATE TRIGGER logged_actions_skip_direct BEFORE INSERT ON auditing.logged_actions FOR EACH STATEMENT EXECUTE PROCEDURE auditing.skip_logged_actions_main();
+CREATE TRIGGER logged_actions_skip_direct BEFORE INSERT ON auditing.logged_actions FOR EACH STATEMENT EXECUTE FUNCTION auditing.skip_logged_actions_main();
+
+
+--
+-- Name: old_logged_actions logged_actions_skip_direct; Type: TRIGGER; Schema: auditing; Owner: -
+--
+
+CREATE TRIGGER logged_actions_skip_direct BEFORE INSERT ON auditing.old_logged_actions FOR EACH STATEMENT EXECUTE FUNCTION auditing.skip_logged_actions_main();
 
 
 --
 -- Name: clients clients_email_insert; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER clients_email_insert BEFORE INSERT ON public.clients FOR EACH ROW EXECUTE PROCEDURE public.valid_email_trigger();
+CREATE TRIGGER clients_email_insert BEFORE INSERT ON public.clients FOR EACH ROW EXECUTE FUNCTION public.valid_email_trigger();
 
 
 --
 -- Name: clients clients_email_update; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER clients_email_update BEFORE UPDATE ON public.clients FOR EACH ROW WHEN ((new.email IS DISTINCT FROM old.email)) EXECUTE PROCEDURE public.valid_email_trigger();
+CREATE TRIGGER clients_email_update BEFORE UPDATE ON public.clients FOR EACH ROW WHEN ((new.email IS DISTINCT FROM old.email)) EXECUTE FUNCTION public.valid_email_trigger();
 
 
 --
 -- Name: developers developers_on_insert; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER developers_on_insert BEFORE INSERT ON public.developers FOR EACH ROW EXECUTE PROCEDURE public.developer_changed();
+CREATE TRIGGER developers_on_insert BEFORE INSERT ON public.developers FOR EACH ROW EXECUTE FUNCTION public.developer_changed();
 
 
 --
 -- Name: developers developers_on_update; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER developers_on_update BEFORE UPDATE ON public.developers FOR EACH ROW EXECUTE PROCEDURE public.developer_changed();
+CREATE TRIGGER developers_on_update BEFORE UPDATE ON public.developers FOR EACH ROW EXECUTE FUNCTION public.developer_changed();
 
 
 --
