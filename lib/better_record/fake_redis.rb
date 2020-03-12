@@ -85,6 +85,7 @@ module BetterRecord
     end
 
     def del(*keys)
+      keys.flatten!
       i = 0
       keys.map {|k| data.delete(k) && (i += 1) }
       i

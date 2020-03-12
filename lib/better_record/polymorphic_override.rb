@@ -23,7 +23,7 @@ module BetterRecord
           $!.message, $!.backtrace if debug
 
         if type_val == :table_name_without_schema
-          type_val = klass.table_name.to_s.split('.').first
+          type_val = klass.table_name.to_s.split('.').last
         else
           type_val = klass.polymorphic_name
         end
