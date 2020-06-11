@@ -29,10 +29,13 @@ module BetterRecord
         connection.execute(%Q(SELECT 1 FROM #{t_name}_#{self.table_name_only} LIMIT 1))
 
         self.const_set(:LoggedAction, Class.new(ApplicationRecord))
+        self.const_get(:LoggedAction).include(ModelConcerns::LoggedActionBase)
         self.const_get(:LoggedAction).table_name = "#{t_name}_#{self.table_name_only}"
         self.const_get(:LoggedAction).primary_key = :event_id
+        self
       rescue ActiveRecord::StatementInvalid
         self.const_set(:LoggedAction, BetterRecord::LoggedAction)
+        self
       end
 
       self.has_many self.audit_relation_name,

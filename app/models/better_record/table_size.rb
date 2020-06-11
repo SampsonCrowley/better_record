@@ -85,12 +85,6 @@ module BetterRecord
     # == Boolean Methods ======================================================
 
     # == Instance Methods =====================================================
-    def changed_columns
-      (self.changed_fields || {}).keys.join(', ').presence || 'N/A'
-    end
 
-    def action_type
-      ACTIONS[action] || 'UNKNOWN'
-    end
   end
 end

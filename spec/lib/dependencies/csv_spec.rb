@@ -1,7 +1,7 @@
 require 'rails_helper'
 RSpec.describe CSV do
   it 'overrides the default CSV version to use versions with proper BOM parsing' do
-    expect(CSV::VERSION).to eq('3.1.2')
+    expect(CSV::VERSION).to match(/3\.1\.[2-9]/)
     csv = CSV.generate_line(%i[ asdf fdsa qwer rewq ])
     20.times do
       csv << CSV.generate_line(%w[ asdf fdsa qwer rewq ])

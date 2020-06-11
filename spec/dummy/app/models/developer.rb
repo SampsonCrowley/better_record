@@ -56,4 +56,7 @@ class Developer < ApplicationRecord
       end
     end
 
+
+  set_audit_methods!
+
 end

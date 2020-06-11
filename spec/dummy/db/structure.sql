@@ -175,16 +175,17 @@ CREATE FUNCTION auditing.audit_table(target_table regclass, audit_rows boolean, 
     table_info = auditing.get_table_information(target_table);
     _full_name = quote_ident(table_info.schema_name) || '.' || quote_ident(table_info.table_name);
 
-    EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_row ON ' || quote_ident(_full_name);
-    EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_stm ON ' || quote_ident(_full_name);
+    EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_row ON ' || _full_name;
+    EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_stm ON ' || _full_name;
 
 
     EXECUTE 'CREATE TABLE IF NOT EXISTS auditing.logged_actions_' || quote_ident(table_info.table_name) || '(
-      CHECK (table_name = ' || quote_literal(table_info.table_name) || ')
+      CHECK (table_name = ' || quote_literal(table_info.table_name) || '),
+      LIKE auditing.logged_actions INCLUDING ALL
     ) INHERITS (auditing.logged_actions)';
 
     IF audit_rows THEN
-      _pk_column_name = auditing.get_primary_key_column(_full_name);
+      _pk_column_name = auditing.get_primary_key_column(_full_name::TEXT);
 
       IF _pk_column_name IS NOT NULL THEN
         _pk_column_snip = ', ' || quote_literal(_pk_column_name);
@@ -196,7 +197,7 @@ CREATE FUNCTION auditing.audit_table(target_table regclass, audit_rows boolean, 
         _ignored_cols_snip = ', ' || quote_literal(ignored_cols);
       END IF;
       _q_txt = 'CREATE TRIGGER audit_trigger_row AFTER INSERT OR UPDATE OR DELETE ON ' ||
-          quote_ident(_full_name) ||
+          _full_name ||
           ' FOR EACH ROW EXECUTE PROCEDURE auditing.if_modified_func(' ||
           quote_literal(audit_query_text) || _pk_column_snip || _ignored_cols_snip || ');';
       RAISE NOTICE '%',_q_txt;
@@ -205,10 +206,11 @@ CREATE FUNCTION auditing.audit_table(target_table regclass, audit_rows boolean, 
     ELSE
     END IF;
 
-    _q_txt = 'CREATE TRIGGER audit_trigger_stm AFTER ' || stm_targets || ' ON ' ||
-        quote_ident(_full_name) ||
-        ' FOR EACH STATEMENT EXECUTE PROCEDURE auditing.if_modified_func('||
-        quote_literal(audit_query_text) || ');';
+    _q_txt = '' ||
+        'CREATE TRIGGER audit_trigger_stm AFTER ' || stm_targets ||
+        ' ON ' || _full_name ||
+        ' FOR EACH STATEMENT EXECUTE PROCEDURE ' ||
+        'auditing.if_modified_func(' || quote_literal(audit_query_text) || ');';
     RAISE NOTICE '%',_q_txt;
     EXECUTE _q_txt;
 
@@ -471,7 +473,8 @@ CREATE FUNCTION auditing.logged_actions_partition() RETURNS trigger
     table_name = table_info.table_name::TEXT;
 
     EXECUTE 'CREATE TABLE IF NOT EXISTS auditing.logged_actions_' || quote_ident(table_name) || '(
-      CHECK (table_name = ' || quote_literal(table_name) || ')
+      CHECK (table_name = ' || quote_literal(table_info.table_name) || '),
+      LIKE auditing.logged_actions INCLUDING ALL
     ) INHERITS (auditing.logged_actions)';
 
     EXECUTE 'INSERT INTO auditing.logged_actions_' || quote_ident(table_name) || ' VALUES ($1.*)' USING NEW;
