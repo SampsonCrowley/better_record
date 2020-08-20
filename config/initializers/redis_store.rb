@@ -8,9 +8,9 @@ if defined?(Redis) && defined?(Redis::Namespace)
     tmp_rds.get('test')
   rescue
     if (!Rails.env.production? && !Boolean.parse(ENV.fetch('FORCE_REDIS') { false })) || Boolean.parse(ENV.fetch('ALLOW_FAKE_REDIS') { false })
-      require BetterRecord::Engine.root.join('lib', 'better_record', 'fake_redis')
+      raise unless defined?(TinyFakeRedis)
       puts "WARNING!!! Redis Server not found"
-      tmp_rds = BetterRecord::FakeRedis.new
+      tmp_rds = TinyFakeRedis.new
     else
       raise
     end

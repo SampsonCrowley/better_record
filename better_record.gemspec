@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'csv', '~> 3.0', '>=3.1.2'
 
   s.add_development_dependency 'rspec-rails', '~> 3.9', '>= 3.9.0'
+  s.add_development_dependency 'tiny_fake_redis', '~> 0.1', '>= 0.1.0'
   # s.add_development_dependency 'capybara'
   s.add_development_dependency 'factory_bot_rails', '~> 4.10', '>= 4.10.0'
 end
