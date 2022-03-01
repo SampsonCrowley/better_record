@@ -14,4 +14,4 @@ gemspec
 # To use a debugger
 # gem 'byebug', group: [:development, :test]
 gem 'irb', '~> 1.0', '>= 1.0.0'
-gem 'image_processing', '~> 1.2'
+gem 'image_processing', '~> 1.12'
